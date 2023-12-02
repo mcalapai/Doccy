@@ -1,0 +1,83 @@
+@font-face {
+  font-family: 'Lustig';
+  src: url('../public/fonts/Lustig.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Owners';
+  src: url('../public/fonts/Owners-Light-Regular.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Owners';
+  src: url('../public/fonts/Owners-Normal-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OwnersWide';
+  src: url('../public/fonts/OwnersWide-Light-Italic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'OwnersWide';
+  src: url('../public/fonts/OwnersWide-Regular-Normal.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OwnersWide';
+  src: url('../public/fonts/OwnersWide-Black-Normal.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OwnersWide';
+  src: url('../public/fonts/OwnersWide-XBlack-Italic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'OwnersWide';
+  src: url('../public/fonts/OwnersWide-XBlack-Normal.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OwnersWide';
+  src: url('../public/fonts/OwnersWide-XLight-Italic.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'OwnersNarrow';
+  src: url('../public/fonts/OwnersNarrow-Black-Italic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'OwnersNarrow';
+  src: url('../public/fonts/OwnersNarrow-Regular-Italic.otf') format('opentype');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'OwnersNarrow';
+  src: url('../public/fonts/OwnersNarrow-Regular-Normal.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
