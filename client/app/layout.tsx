@@ -4,6 +4,9 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import ChatBox from "@/components/ChatBox";
 import Navbar from "@/components/Navbar";
+import SupabaseProvider from "@/providers/SupabaseProvider";
+import UserProvider from "@/providers/UserProvider";
+import ModalProvider from "@/providers/ModalProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,28 +22,33 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <div className="flex h-full">
-          <div className="h-full">
-            <Sidebar />
-          </div>
+      <body className={`${inter.className}`}>
+        <SupabaseProvider>
+          <UserProvider>
+            <ModalProvider />
+            <div className="flex h-full">
+              <div className="h-full">
+                <Sidebar />
+              </div>
 
-          <div className="overflow-hidden w-full">
-            <div className="w-full top-0 p-4 sticky bg-background-secondary">
-              <Navbar />
-            </div>
-            <main className="bg-background-secondary overflow-y-auto h-full">
-              {children}
-            </main>
-            {/*<Toaster />*/}
+              <div className="overflow-hidden w-full">
+                <div className="w-full top-0 p-4 sticky bg-background-secondary">
+                  <Navbar />
+                </div>
+                <main className="bg-background-secondary overflow-y-auto h-full">
+                  {children}
+                </main>
+                {/*<Toaster />*/}
 
-            <div className="w-full bottom-0 p-4 sticky">
-              <div className="flex h-[66px]">
-                <ChatBox />
+                <div className="w-full bottom-0 p-4 sticky">
+                  <div className="flex h-[66px]">
+                    <ChatBox />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </UserProvider>
+        </SupabaseProvider>
       </body>
     </html>
   );

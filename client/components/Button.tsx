@@ -14,7 +14,7 @@ const Button: React.FC<ButtonProps> = ({ text, className, onClick, icon }) => {
     <button
       onClick={() => onClick()}
       className={twMerge(
-        `bg-main-primary rounded-full h-fit w-fit px-[26px] py-[8px] flex items-center justify-center leading-none transition-all \
+        `bg-main-primary rounded-full h-fit w-fit px-[26px] py-[8px] flex items-center justify-center leading-none transition-all ease-in-out \
         hover:bg-button-active
         active:bg-button-active`,
         className

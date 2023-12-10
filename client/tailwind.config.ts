@@ -24,7 +24,7 @@ const config: Config = {
           'primary': '#F9BF00',
           'destructive': "#db1e21",
           'destructive-secondary': "#8e1315",
-          "outline": 'D9D9D9',
+          "outline": '#D9D9D9',
         },
         background: {
           'primary': '#000000',

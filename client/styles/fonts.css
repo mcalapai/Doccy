@@ -36,7 +36,7 @@
 @font-face {
   font-family: 'OwnersWide';
   src: url('../public/fonts/OwnersWide-Black-Normal.otf') format('opentype');
-  font-weight: 900;
+  font-weight: 700;
   font-style: normal;
 }
 
@@ -64,7 +64,7 @@
 @font-face {
   font-family: 'OwnersNarrow';
   src: url('../public/fonts/OwnersNarrow-Black-Italic.otf') format('opentype');
-  font-weight: 900;
+  font-weight: 700;
   font-style: italic;
 }
 
