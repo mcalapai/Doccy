@@ -15,7 +15,7 @@
 @font-face {
   font-family: 'Owners';
   src: url('../public/fonts/Owners-Normal-Regular.otf') format('opentype');
-  font-weight: normal;
+  font-weight: 400;
   font-style: normal;
 }
 

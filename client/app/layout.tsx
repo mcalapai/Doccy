@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import SupabaseProvider from "@/providers/SupabaseProvider";
 import UserProvider from "@/providers/UserProvider";
 import ModalProvider from "@/providers/ModalProvider";
+import ToasterProvier from "@/providers/ToasterProvider";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,10 +25,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className}`}>
+        <ToasterProvier />
         <SupabaseProvider>
           <UserProvider>
             <ModalProvider />
-            <div className="flex h-full">
+
+            <div className="flex h-screen">
               <div className="h-full">
                 <Sidebar />
               </div>

@@ -1,5 +1,5 @@
 import { Icon } from "iconsax-react";
-import { cloneElement } from "react";
+import { forwardRef } from "react";
 
 interface IconButtonProps {
   className?: string;
@@ -14,9 +14,10 @@ const IconButton: React.FC<IconButtonProps> = ({
 }) => {
   return (
     <button
-      className="bg-button-primary w-fit h-fit rounded-full flex items-center justify-center p-[8px] transition-all \
+      className={`bg-button-primary w-fit h-fit rounded-full flex items-center justify-center p-[8px] transition-all \
     hover:bg-button-hover \
-    active:bg-button-active"
+      active:bg-button-active ${className}`}
+      onClick={onClick}
     >
       {icon}
     </button>
