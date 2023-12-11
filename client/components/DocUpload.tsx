@@ -64,7 +64,7 @@ const DocUpload: React.FC<DocUploadProps> = ({
           <motion.div
             initial={{ opacity: 0, transform: "translateY(10px)" }}
             animate={{ opacity: 1, transform: "translateY(0px)" }}
-            transition={{ duration: 0.1 }}
+            transition={{ duration: 0.1, ease: "easeInOut" }}
             className="absolute bottom-full 
       bg-background-primary rounded-[20px] w-[200px] "
           >
@@ -93,7 +93,7 @@ const DocUpload: React.FC<DocUploadProps> = ({
       >
         <input
           type="file"
-          onChange={(e) => console.log(e.target.files)}
+          onChange={(e) => addFiles(Array.from(e.target.files!))}
           ref={fileInputRef}
           className="hidden"
         />
