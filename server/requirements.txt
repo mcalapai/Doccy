@@ -1,0 +1,10 @@
+Flask
+flask-cors
+pandas
+numpy
+python-dotenv
+langchain
+openai
+qdrant-client
+PyPDF2
+flask-sock
