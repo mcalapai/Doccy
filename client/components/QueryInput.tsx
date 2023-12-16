@@ -1,3 +1,4 @@
+import useChatSession from "@/hooks/useChatSession";
 import { ChangeEvent } from "react";
 
 interface QueryInputProps {
@@ -5,6 +6,7 @@ interface QueryInputProps {
   text: string;
   setText: (value: string) => void;
   className?: string;
+  onEnter?: () => void;
 }
 
 const QueryInput: React.FC<QueryInputProps> = ({
@@ -12,7 +14,9 @@ const QueryInput: React.FC<QueryInputProps> = ({
   text,
   setText,
   className,
+  onEnter,
 }) => {
+  const { loadingResponse } = useChatSession();
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     // 👇 Store the input value to local state
     setText(e.target.value);
@@ -28,6 +32,13 @@ const QueryInput: React.FC<QueryInputProps> = ({
         placeholder={placeholder}
         value={text}
         onChange={handleChange}
+        disabled={loadingResponse}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && onEnter) {
+            setText("");
+            onEnter();
+          }
+        }}
       />
     </div>
   );

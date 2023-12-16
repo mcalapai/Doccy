@@ -4,27 +4,33 @@ import {
   AutocompleteSection,
   AutocompleteItem,
 } from "@nextui-org/autocomplete";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useReducer } from "react";
 import useCollections from "@/hooks/useCollections";
 import { motion, AnimatePresence } from "framer-motion";
+import useChatSession from "@/hooks/useChatSession";
+import { useUser } from "@/hooks/useUser";
 
 interface CollectionDropdownProps {
   collections: string[];
+  disabled: boolean;
 }
 
 const CollectionDropdown: React.FC<CollectionDropdownProps> = ({
   collections,
+  disabled,
 }) => {
   const { currentCollection, setCurrentCollection } = useCollections();
+  const { userDetails } = useUser();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [filteredOptions, setFilteredOptions] = useState<string[]>(collections);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const onChange = (option: string) => {
     setCurrentCollection(option);
   };
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState<string[]>(collections);
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -55,6 +61,8 @@ const CollectionDropdown: React.FC<CollectionDropdownProps> = ({
     setIsOpen(false);
   };
 
+  // code to set selection in backend
+
   return (
     <div ref={wrapperRef} className="relative">
       <AnimatePresence>
@@ -72,24 +80,33 @@ const CollectionDropdown: React.FC<CollectionDropdownProps> = ({
                 onClick={() => handleSelect(option)}
                 className="px-[22px] py-1 cursor-pointer hover:text-background-tertiary transition-all font-owners text-sm"
               >
-                {option}
+                {option.replace(`${userDetails?.id}___`, "")}
               </motion.li>
             ))}
           </motion.ul>
         )}
       </AnimatePresence>
-      <input
-        type="text"
-        value={currentCollection}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        onClick={() => {
-          setCurrentCollection("");
-          setSearchTerm("");
-          setIsOpen(!isOpen);
-        }}
-        className="w-full px-4 py-2 bg-button-primary text-black rounded-full focus:outline-none bottom-full text-sm font-owners"
-        placeholder="Select a collection..."
-      />
+      {!disabled ? (
+        <input
+          type="text"
+          value={currentCollection.replace(`${userDetails?.id}___`, "")}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onClick={() => {
+            setSearchTerm("");
+            setIsOpen(!isOpen);
+          }}
+          className="w-full px-4 py-2 bg-button-primary text-black rounded-full focus:outline-none bottom-full text-sm font-owners"
+          placeholder="Select a collection..."
+        />
+      ) : (
+        <input
+          type="text"
+          value={currentCollection.replace(`${userDetails?.id}___`, "")}
+          disabled={true}
+          className="w-full px-4 py-2 bg-button-primary text-black rounded-full focus:outline-none bottom-full text-sm font-owners"
+          placeholder="Select a collection..."
+        />
+      )}
     </div>
   );
 };

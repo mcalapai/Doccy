@@ -8,7 +8,7 @@ import SupabaseProvider from "@/providers/SupabaseProvider";
 import UserProvider from "@/providers/UserProvider";
 import ModalProvider from "@/providers/ModalProvider";
 import ToasterProvier from "@/providers/ToasterProvider";
-import { Providers } from "./providers";
+import { ToastContainer, toast } from "react-toastify";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,7 +35,7 @@ export default function RootLayout({
                 <Sidebar />
               </div>
 
-              <div className="overflow-hidden w-full">
+              <div className="overflow-hidden w-full flex flex-col">
                 <div className="w-full top-0 p-4 sticky bg-background-secondary">
                   <Navbar />
                 </div>
@@ -43,8 +43,9 @@ export default function RootLayout({
                   {children}
                 </main>
                 {/*<Toaster />*/}
+                <ToastContainer />
 
-                <div className="w-full bottom-0 p-4 sticky">
+                <div className="w-full bottom-0 p-4 pt-[1px] sticky bg-background-secondary">
                   <div className="flex h-[66px]">
                     <ChatBox />
                   </div>

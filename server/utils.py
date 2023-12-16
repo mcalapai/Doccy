@@ -31,9 +31,10 @@ class QDrantClient():
     def get_pdf_text(self, pdf_docs):
         text = ""
         # for pdf in pdf_docs:
-        pdf_reader = PdfReader(pdf_docs)
-        for page in pdf_reader.pages:
-            text += page.extract_text()
+        for pdf in pdf_docs:
+            pdf_reader = PdfReader(pdf)
+            for page in pdf_reader.pages:
+                text += page.extract_text()
         return text
 
     def get_text_chunks(self, raw_text: str) -> str:
@@ -102,9 +103,9 @@ class QDrantClient():
         self.conversation = self.get_conversation_chain(
             current_vector_store)
 
-    def create_vector_store(self, file, collection_name):
+    def create_vector_store(self, files, collection_name):
         # get pdf text
-        raw_text = self.get_pdf_text(file)
+        raw_text = self.get_pdf_text(files)
 
         # get text chunks
         text_chunks = self.get_text_chunks(raw_text)

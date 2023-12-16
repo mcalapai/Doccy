@@ -34,6 +34,4 @@ body {
       transparent,
       rgb(var(--background-end-rgb))
     )
-    rgb(var(--background-start-rgb));
-    letter-spacing: 0.02rem;
 }

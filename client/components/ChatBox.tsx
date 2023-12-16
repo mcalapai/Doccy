@@ -8,13 +8,25 @@ import { useState, useEffect } from "react";
 import CollectionDropdown from "./CollectionDropdown";
 import useCollections from "@/hooks/useCollections";
 import DocUpload from "./DocUpload";
+import useChatSession from "@/hooks/useChatSession";
+import uuid from "react-uuid";
+import { useUser } from "@/hooks/useUser";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "./components.css";
 
 const ChatBox = () => {
-  // Global store
-  const chatHistory = useStore((state) => state.chatHistory);
-  const setChatHistory = useStore((state) => state.setChatHistory);
-
+  // chat session
   const { currentCollection, collections, setCollections } = useCollections();
+  const {
+    sessionID,
+    setSessionID,
+    loadingResponse,
+    setLoadingResponse,
+    chatHistory,
+    setChatHistory,
+  } = useChatSession();
 
   // collections
   const [loading, setLoading] = useState(false);
@@ -23,19 +35,89 @@ const ChatBox = () => {
   const [inputText, setInputText] = useState("");
 
   // file upload
-  const [isUploadedFiles, setIsUploadedFiles] = useState<boolean>(false);
+  //const [isUploadedFiles, setIsUploadedFiles] = useState<boolean>(false);
+  const [documents, setDocuments] = useState<File[]>([]);
   const [collectionNameInput, setCollectionNameInput] = useState("");
 
-  const postData = async (inputText: string) => {
-    setLoading(true);
+  // user
+  const supabaseClient = useSupabaseClient();
+  const { user, userDetails, accessToken } = useUser();
+
+  useEffect(() => {
+    if (documents.length > 0 && collectionNameInput === "") {
+      setCollectionNameInput(documents[0].name.slice(0, -4));
+    }
+  }, [documents]);
+
+  useEffect(() => {
+    console.log("Collection changed to: ", currentCollection);
+  }, [currentCollection]);
+
+  const userPostData = async (
+    inputText: string,
+    accessToken: string,
+    collection?: string,
+    files?: File[]
+  ) => {
+    setLoadingResponse(true);
+
+    const formData = new FormData();
+    formData.append("query", inputText);
+    formData.append("access_token", accessToken);
+    if (files) {
+      console.log("files");
+      files.forEach((file, index) => {
+        formData.append(`file_${index}`, file);
+      });
+    }
+    if (collection) {
+      const collectionName = collection.replace(`${userDetails?.id}___`, "");
+      formData.append("collection", collectionName);
+    }
+
+    console.log(formData);
+
+    const endpoint = "http://localhost:5000/api/user/query";
     try {
-      const response = await fetch("http://localhost:5000/api/query", {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (data.status !== "success") {
+        throw new Error("Something went wrong");
+      } else {
+        const response = data.chat_history;
+        setChatHistory((currentChatHistory) => [
+          ...currentChatHistory,
+          response,
+        ]);
+      }
+    } catch (error) {
+      console.log(error);
+      //setErrorMessage(true);
+    }
+    setLoadingResponse(false);
+  };
+
+  const guestPostData = async (
+    inputText: string,
+    collection: string,
+    files?: File[]
+  ) => {
+    setLoadingResponse(true);
+    const endpoint = "http://localhost:5000/api/guest/query";
+    try {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           query: inputText,
+          files: files ? files : null,
+          collection: collection,
         }),
       });
       const data = await response.json();
@@ -53,13 +135,67 @@ const ChatBox = () => {
       console.log(error);
       //setErrorMessage(true);
     }
-    setLoading(false);
+    setLoadingResponse(false);
   };
 
   const onSubmit = (input: string) => {
-    // append to user input history
-    setChatHistory((currentChatHistory) => [...currentChatHistory, input]);
-    postData(input);
+    if (documents.length === 0 && currentCollection === "") {
+      toast(
+        "Doccy has no context :( please specify a collection or make one!",
+        {
+          position: toast.POSITION.BOTTOM_RIGHT,
+          className: "custom-error-toast",
+          hideProgressBar: true,
+        }
+      );
+      return null;
+    }
+    if (user && accessToken) {
+      // append to user input history
+      if (sessionID === null) {
+        const newId = uuid();
+        setSessionID(newId);
+      }
+      setChatHistory((currentChatHistory) => [...currentChatHistory, input]);
+      if (documents.length > 0) {
+        // uploading new collection
+        userPostData(
+          input,
+          accessToken,
+          userDetails?.id + "___" + collectionNameInput,
+          documents
+        );
+      } else {
+        // selecting existing collection
+        userPostData(
+          input,
+          accessToken,
+          userDetails?.id + "___" + currentCollection
+        );
+      }
+    } else {
+      setChatHistory((currentChatHistory) => [...currentChatHistory, input]);
+      if (documents.length > 0) {
+        guestPostData(input, currentCollection, documents);
+      } else {
+        guestPostData(input, currentCollection);
+      }
+    }
+
+    setDocuments([]);
+
+    // here we want to submit the query along with all the documents.
+
+    // if the user is logged in:
+    // record the query as a new chat session,
+    // store this chat session in the db,
+    // and get the response back
+
+    // if the user is not logged in:
+    // send the query, the documents and the collection name
+    // get a response back
+
+    // so we need to send the query, the documents, the collection name and the user JWT token
   };
 
   // fetch collection data
@@ -80,25 +216,41 @@ const ChatBox = () => {
         {/*<IconButton icon={<ArrowUp className="text-black" size={20} />} />*/}
 
         {/*<IconButton icon={<Paperclip className="text-black" size={20} />} />*/}
-        <DocUpload
-          isUploadedFiles={isUploadedFiles}
-          setIsUploadedFiles={setIsUploadedFiles}
-        />
-        {!isUploadedFiles ? (
-          <CollectionDropdown collections={collections} />
+        {!(sessionID === null) ? (
+          <IconButton icon={<Paperclip className="text-black" size={20} />} />
         ) : (
-          <QueryInput
-            className="w-[195px]"
-            placeholder="Set collection name..."
-            text={collectionNameInput}
-            setText={setCollectionNameInput}
+          <DocUpload
+            documents={documents}
+            setDocuments={setDocuments}
+            setCollectionNameInput={setCollectionNameInput}
           />
         )}
-        <QueryInput
-          placeholder="Enter search query..."
-          text={inputText}
-          setText={setInputText}
-        />
+
+        <div className="w-full grid grid-cols-8 gap-x-[12px]">
+          <div className="col-span-1">
+            {documents.length === 0 ? (
+              <CollectionDropdown
+                collections={collections}
+                disabled={!(sessionID === null)}
+              />
+            ) : (
+              <QueryInput
+                className="w-[200px]"
+                placeholder="Set collection name..."
+                text={collectionNameInput}
+                setText={setCollectionNameInput}
+              />
+            )}
+          </div>
+          <div className="col-span-7">
+            <QueryInput
+              placeholder="Enter search query..."
+              text={inputText}
+              setText={setInputText}
+              onEnter={() => onSubmit(inputText)}
+            />
+          </div>
+        </div>
 
         <IconButton
           icon={<Send className="text-black" size={20} />}

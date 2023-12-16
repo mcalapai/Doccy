@@ -5,15 +5,17 @@ import { Add, CloseCircle, Paperclip } from "iconsax-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface DocUploadProps {
-  isUploadedFiles: boolean;
-  setIsUploadedFiles: React.Dispatch<React.SetStateAction<boolean>>;
+  documents: File[];
+  setDocuments: React.Dispatch<React.SetStateAction<File[]>>;
+  setCollectionNameInput: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const DocUpload: React.FC<DocUploadProps> = ({
-  isUploadedFiles,
-  setIsUploadedFiles,
+  documents,
+  setDocuments,
+  setCollectionNameInput,
 }) => {
-  const [documents, setDocuments] = useState<File[]>([]);
+  //const [documents, setDocuments] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
   // custom input button
@@ -29,6 +31,7 @@ const DocUpload: React.FC<DocUploadProps> = ({
 
   const removeFiles = () => {
     setDocuments([]);
+    //setCollectionNameInput("");
   };
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
@@ -49,14 +52,6 @@ const DocUpload: React.FC<DocUploadProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (documents.length > 0) {
-      setIsUploadedFiles(true);
-    } else if (documents.length === 0) {
-      setIsUploadedFiles(false);
-    }
-  }, [documents]);
-
   return (
     <>
       <AnimatePresence>
@@ -66,7 +61,7 @@ const DocUpload: React.FC<DocUploadProps> = ({
             animate={{ opacity: 1, transform: "translateY(0px)" }}
             transition={{ duration: 0.1, ease: "easeInOut" }}
             className="absolute bottom-full 
-      bg-background-primary rounded-[20px] w-[200px] "
+      bg-background-primary rounded-[20px] w-[200px] mb-[5px]"
           >
             <IconButton
               className="text-black top-0 right-0 -mt-[5px] -mr-[10px] p-[1px] absolute z-100 rotate-45"
@@ -76,7 +71,10 @@ const DocUpload: React.FC<DocUploadProps> = ({
             <div className="flex flex-col px-[22px] py-[14px]">
               {documents.map((doc, index) => {
                 return (
-                  <p className="font-owners overflow-hidden whitespace-nowrap text-ellipsis">
+                  <p
+                    key={index}
+                    className="font-owners overflow-hidden whitespace-nowrap text-ellipsis"
+                  >
                     {doc.name}
                   </p>
                 );

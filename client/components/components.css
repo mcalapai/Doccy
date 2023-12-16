@@ -1,0 +1,23 @@
+@keyframes swipeAcross {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.skeleton-highlight {
+  position: absolute;
+  left: -100%;
+  top: 0;
+  bottom: 0;
+  width: 50%; /* Adjust the width of the highlight as needed */
+  animation: swipeAcross 1.5s infinite linear;
+}
+
+.custom-error-toast {
+  background: #db1e21;
+  color: white;
+  font-family: Owners;
+}
