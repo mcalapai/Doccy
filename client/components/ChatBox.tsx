@@ -77,7 +77,7 @@ const ChatBox = () => {
 
     console.log(formData);
 
-    const endpoint = "http://localhost:5000/api/user/query";
+    const endpoint = "http://127.0.0.1:5000/api/user/query";
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -201,7 +201,7 @@ const ChatBox = () => {
   // fetch collection data
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/get-collections`)
+    fetch(`http://127.0.0.1:5000/api/get-collections`)
       .then((response) => response.json())
       .then((data) => {
         //console.log("Collections", data.collections);
