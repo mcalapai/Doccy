@@ -31,14 +31,8 @@ const Sidebar = () => {
           )}
         </p>
         <p className="font-normal pt-2 font-owners text-lg">
-          Upload and chat with your documents
+          Welcome to Doccy - upload and chat with your docs.
         </p>
-      </div>
-      <div className="flex flex-col gap-y-2 font-owners">
-        <p className="font-semibold text-xl">Select collection</p>
-      </div>
-      <div className="flex flex-col gap-y-2 font-owners">
-        <p className="font-semibold text-xl">New collection</p>
       </div>
       {user && (
         <div className="flex flex-col gap-y-2 font-owners">

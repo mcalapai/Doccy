@@ -45,6 +45,9 @@ const config: Config = {
       },
       lineHeight: {
         'extra-small': '0.8'
+      },
+      screens: {
+        'md-lg': '900px'
       }
     },
   },

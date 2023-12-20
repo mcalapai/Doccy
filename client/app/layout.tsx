@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
-import ChatBox from "@/components/ChatBox";
+import ChatBox from "@/components/ChatBoxUser";
 import Navbar from "@/components/Navbar";
 import SupabaseProvider from "@/providers/SupabaseProvider";
 import UserProvider from "@/providers/UserProvider";
 import ModalProvider from "@/providers/ModalProvider";
 import ToasterProvier from "@/providers/ToasterProvider";
 import { ToastContainer, toast } from "react-toastify";
+import ChatBoxHost from "@/components/ChatBoxHost";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,7 +48,7 @@ export default function RootLayout({
 
                 <div className="w-full bottom-0 p-4 pt-[1px] sticky bg-background-secondary">
                   <div className="flex h-[66px]">
-                    <ChatBox />
+                    <ChatBoxHost />
                   </div>
                 </div>
               </div>

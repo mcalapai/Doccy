@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Button from "@/components/Button";
 import useChatSession from "@/hooks/useChatSession";
 import Image from "next/image";
@@ -9,11 +9,17 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import SkeletonLine from "@/components/Skeleton";
 
 export default function Home() {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const { loadingResponse, setLoadingResponse, chatHistory, setChatHistory } =
     useChatSession();
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    console.log(loadingResponse);
+    scrollToBottom();
   }, [loadingResponse]);
 
   return (
@@ -25,7 +31,7 @@ export default function Home() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col px-[400px] py-5 gap-y-[48px]">
+        <div className="flex flex-col lg:px-[200px] xl:px-[400px] py-5 gap-y-[48px]">
           {chatHistory.map((item, index) => {
             const from = index % 2 === 0 ? "You" : "Doccy";
             return (
@@ -39,7 +45,7 @@ export default function Home() {
                   <p className="font-ownersNarrow font-bold text-[20px]">
                     {from}
                   </p>
-                  <p className="font-owner font-normal text-[20px] break-words">
+                  <p className="font-owner font-normal text-[20px] break-words whitespace-pre-wrap">
                     {item}
                   </p>
                 </motion.div>
@@ -61,6 +67,7 @@ export default function Home() {
           )}
         </div>
       )}
+      <div ref={messagesEndRef} />
     </main>
   );
 }

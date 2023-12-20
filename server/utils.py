@@ -122,3 +122,25 @@ class QDrantClient():
         vector_store.add_texts(text_chunks)
 
         print("Created vector store")
+
+
+def check_bucket_folder_exists(supabase_client, bucket_name, folder_name):
+    if not folder_name.endswith("/"):
+        folder_name += "/"
+
+    response = supabase_client.storage().from_(
+        bucket_name).list(folder_name, {"limit": 1})
+    if response.data and len(response.data) > 0:
+        return True
+    return False
+
+
+def create_bucket_folder(supabase_client, bucket_name, folder_name):
+    if not folder_name.endswith("/"):
+        folder_name += "/"
+
+    response = supabase_client.storage().from_(
+        bucket_name).upload(folder_name + '.placeholder', b'', 'application/octet-stream')
+    if response.get("error") is None:
+        return True
+    return False

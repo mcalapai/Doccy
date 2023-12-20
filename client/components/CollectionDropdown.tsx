@@ -9,6 +9,7 @@ import useCollections from "@/hooks/useCollections";
 import { motion, AnimatePresence } from "framer-motion";
 import useChatSession from "@/hooks/useChatSession";
 import { useUser } from "@/hooks/useUser";
+import useCollectionDisplayNames from "@/hooks/useCollectionDisplayNames";
 
 interface CollectionDropdownProps {
   collections: string[];
@@ -22,10 +23,17 @@ const CollectionDropdown: React.FC<CollectionDropdownProps> = ({
   const { currentCollection, setCurrentCollection } = useCollections();
   const { userDetails } = useUser();
 
+  const collectionDisplayNames = useCollectionDisplayNames(
+    collections,
+    userDetails?.id
+  );
+
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [filteredOptions, setFilteredOptions] = useState<string[]>(collections);
+  const [filteredOptions, setFilteredOptions] = useState<string[]>(
+    collectionDisplayNames
+  );
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const onChange = (option: string) => {
@@ -48,16 +56,22 @@ const CollectionDropdown: React.FC<CollectionDropdownProps> = ({
 
   useEffect(() => {
     setFilteredOptions(
-      collections.filter((option) =>
+      collectionDisplayNames.filter((option) =>
         option.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
   }, [searchTerm, collections]);
 
   const handleSelect = (value: string) => {
-    setCurrentCollection(value);
+    let colNameUser = "";
+    if (userDetails) {
+      colNameUser = userDetails?.id + "___" + value;
+    } else {
+      colNameUser = value;
+    }
+    setCurrentCollection(colNameUser);
     setSearchTerm(value); // Update the search term to the selected value
-    onChange(value);
+    onChange(colNameUser);
     setIsOpen(false);
   };
 
@@ -80,7 +94,7 @@ const CollectionDropdown: React.FC<CollectionDropdownProps> = ({
                 onClick={() => handleSelect(option)}
                 className="px-[22px] py-1 cursor-pointer hover:text-background-tertiary transition-all font-owners text-sm"
               >
-                {option.replace(`${userDetails?.id}___`, "")}
+                {option}
               </motion.li>
             ))}
           </motion.ul>
@@ -99,13 +113,9 @@ const CollectionDropdown: React.FC<CollectionDropdownProps> = ({
           placeholder="Select a collection..."
         />
       ) : (
-        <input
-          type="text"
-          value={currentCollection.replace(`${userDetails?.id}___`, "")}
-          disabled={true}
-          className="w-full px-4 py-2 bg-button-primary text-black rounded-full focus:outline-none bottom-full text-sm font-owners"
-          placeholder="Select a collection..."
-        />
+        <p className="w-full px-4 py-2 bg-button-primary text-black rounded-full focus:outline-none bottom-full text-sm font-owners">
+          {currentCollection.replace(`${userDetails?.id}___`, "")}
+        </p>
       )}
     </div>
   );
