@@ -8,6 +8,7 @@ import { User } from "iconsax-react";
 import CollectionDropdown from "./CollectionDropdown";
 import { useEffect, useState } from "react";
 import useCollections from "@/hooks/useCollections";
+import Button from "./Button";
 
 const Sidebar = () => {
   const router = useRouter();
@@ -15,6 +16,8 @@ const Sidebar = () => {
 
   const supabaseClient = useSupabaseClient();
   const { user } = useUser();
+
+  const clearChat = () => {};
 
   return (
     <div className="w-[250px] h-full flex flex-col gap-y-10 text-text-primary p-4 bg-background-primary border-r border-main-outline">
@@ -33,6 +36,15 @@ const Sidebar = () => {
         <p className="font-normal pt-2 font-owners text-lg">
           Welcome to Doccy - upload and chat with your docs.
         </p>
+      </div>
+      <div className="flex flex-col gap-y-2 font-owners">
+        <Button
+          text="New Chat"
+          className="font-semibold text-xl w-full"
+          onClick={() => {
+            window.location.reload();
+          }}
+        />
       </div>
       {user && (
         <div className="flex flex-col gap-y-2 font-owners">

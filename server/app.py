@@ -1,6 +1,6 @@
 # flask imports
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 # py imports
 import pandas as pd
@@ -16,7 +16,8 @@ from supabase import create_client, Client
 
 # app instance
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
+#CORS(app, supports_credentials=True)
 
 
 @app.route('/api/guest/query', methods=['POST'])
@@ -37,7 +38,9 @@ def handle_guest_query():
         qdrant_object.set_collection(collection)
 
     response = qdrant_object.handle_user_input(gpt_query)
-    return jsonify({"status": "success", "chat_history": response})
+    json_response = jsonify({"status": "success", "chat_history": response})
+    json_response.headers.add('Access-Control-Allow-Origin', '*')
+    return json_response
     # run query from collection name
 
 
@@ -58,14 +61,18 @@ def handle_user_query():
         qdrant_object.set_collection(collection)
         response = qdrant_object.handle_user_input(gpt_query)
 
-        return jsonify({"status": "success", "chat_history": response})
+        response = jsonify({"status": "success", "chat_history": response})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
     else:
         print("Query from existing collection ", collection)
 
         qdrant_object.set_collection(collection)
         response = qdrant_object.handle_user_input(gpt_query)
 
-        return jsonify({"status": "success", "chat_history": response})
+        response = jsonify({"status": "success", "chat_history": response})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
         # run query from collection name
 
     # chat_history = qdrant_object.handle_user_input(gpt_query)
@@ -80,8 +87,10 @@ def handle_user_query():
 def handle_get_collections():
     collections = qdrant_object.get_existing_collections()
     print(collections)
+    response = jsonify({"collections": collections})
+    response.headers.add('Access-Control-Allow-Origin', '*')
 
-    return jsonify({"collections": collections})
+    return response
 
 
 @app.route('/api/user/save-chat', methods=['POST'])

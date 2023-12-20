@@ -58,7 +58,7 @@ const ChatBoxGuest = () => {
     });
     formData.append("collection", collection);
     formData.append("new_chat", isNewChat.toString());
-    const endpoint = "http://localhost:5000/api/guest/query";
+    const endpoint = "http://127.0.0.1:5000/api/guest/query";
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -129,7 +129,9 @@ const ChatBoxGuest = () => {
   // fetch collection data
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/get-collections`)
+    fetch(`http://127.0.0.1:5000/api/get-collections`, {
+      method: "GET",
+    })
       .then((response) => response.json())
       .then((data) => {
         //console.log("Collections", data.collections);

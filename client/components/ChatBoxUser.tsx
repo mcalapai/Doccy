@@ -71,7 +71,7 @@ const ChatBoxUser = () => {
     }
     formData.append("collection", collection);
 
-    const endpoint = "http://localhost:5000/api/user/query";
+    const endpoint = "http://127.0.0.1:5000/api/user/query";
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -103,7 +103,7 @@ const ChatBoxUser = () => {
     formData.append("user_id", userId);
     formData.append("file_id", sessionId);
 
-    const endpoint = "http://localhost:5000/api/user/save-chat";
+    const endpoint = "http://127.0.0.1:5000/api/user/save-chat";
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -164,7 +164,7 @@ const ChatBoxUser = () => {
   // fetch collection data
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/get-collections`)
+    fetch(`http://127.0.0.1:5000/api/get-collections`)
       .then((response) => response.json())
       .then((data) => {
         //console.log("Collections", data.collections);
