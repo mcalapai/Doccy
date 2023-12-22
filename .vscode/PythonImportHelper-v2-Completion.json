@@ -142,11 +142,62 @@
         "documentation": {}
     },
     {
+        "label": "dotenv",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
         "label": "load_dotenv",
         "importPath": "dotenv",
         "description": "dotenv",
         "isExtraImport": true,
         "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "openai",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "openai",
+        "description": "openai",
+        "detail": "openai",
+        "documentation": {}
+    },
+    {
+        "label": "qdrant_client",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "qdrant_client",
+        "description": "qdrant_client",
+        "detail": "qdrant_client",
+        "documentation": {}
+    },
+    {
+        "label": "QdrantClient",
+        "importPath": "qdrant_client",
+        "description": "qdrant_client",
+        "isExtraImport": true,
+        "detail": "qdrant_client",
+        "documentation": {}
+    },
+    {
+        "label": "OpenAI",
+        "importPath": "langchain.llms",
+        "description": "langchain.llms",
+        "isExtraImport": true,
+        "detail": "langchain.llms",
         "documentation": {}
     },
     {
@@ -187,15 +238,6 @@
         "description": "langchain.vectorstores",
         "isExtraImport": true,
         "detail": "langchain.vectorstores",
-        "documentation": {}
-    },
-    {
-        "label": "qdrant_client",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "qdrant_client",
-        "description": "qdrant_client",
-        "detail": "qdrant_client",
         "documentation": {}
     },
     {
@@ -452,6 +494,69 @@
         "description": "server.app",
         "peekOfCode": "app = Flask(__name__)\n#CORS(app)\n#CORS(app, supports_credentials=True)\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')\n    print(\"new chat: \" + new_chat)",
         "detail": "server.app",
+        "documentation": {}
+    },
+    {
+        "label": "df",
+        "kind": 5,
+        "importPath": "server.csv_query",
+        "description": "server.csv_query",
+        "peekOfCode": "df = pd.read_csv('data/Batch2.csv')\n# combine into one string\ndf['combined'] = df.apply(lambda row: ' '.join(row.astype(str)), axis=1)\n# openai and langchain setup\nopenai.api_key = os.getenv('OPENAI_API_KEY')\nllm = OpenAI()\n# generate embeddings for each row\nembeddings = [llm.embed(text) for text in df['combined']]\n# create qdrant client\nclient = QdrantClient(host=\"localhost\", port=6333)",
+        "detail": "server.csv_query",
+        "documentation": {}
+    },
+    {
+        "label": "df['combined']",
+        "kind": 5,
+        "importPath": "server.csv_query",
+        "description": "server.csv_query",
+        "peekOfCode": "df['combined'] = df.apply(lambda row: ' '.join(row.astype(str)), axis=1)\n# openai and langchain setup\nopenai.api_key = os.getenv('OPENAI_API_KEY')\nllm = OpenAI()\n# generate embeddings for each row\nembeddings = [llm.embed(text) for text in df['combined']]\n# create qdrant client\nclient = QdrantClient(host=\"localhost\", port=6333)\ncollection_name = \"test_collection\"\nclient.recreate_collection(collection_name=collection_name, vector_size=len(embeddings[0]), distance='Cosine')",
+        "detail": "server.csv_query",
+        "documentation": {}
+    },
+    {
+        "label": "openai.api_key",
+        "kind": 5,
+        "importPath": "server.csv_query",
+        "description": "server.csv_query",
+        "peekOfCode": "openai.api_key = os.getenv('OPENAI_API_KEY')\nllm = OpenAI()\n# generate embeddings for each row\nembeddings = [llm.embed(text) for text in df['combined']]\n# create qdrant client\nclient = QdrantClient(host=\"localhost\", port=6333)\ncollection_name = \"test_collection\"\nclient.recreate_collection(collection_name=collection_name, vector_size=len(embeddings[0]), distance='Cosine')\n# upload to qdrant\nfor i, emb in enumerate(embeddings):",
+        "detail": "server.csv_query",
+        "documentation": {}
+    },
+    {
+        "label": "llm",
+        "kind": 5,
+        "importPath": "server.csv_query",
+        "description": "server.csv_query",
+        "peekOfCode": "llm = OpenAI()\n# generate embeddings for each row\nembeddings = [llm.embed(text) for text in df['combined']]\n# create qdrant client\nclient = QdrantClient(host=\"localhost\", port=6333)\ncollection_name = \"test_collection\"\nclient.recreate_collection(collection_name=collection_name, vector_size=len(embeddings[0]), distance='Cosine')\n# upload to qdrant\nfor i, emb in enumerate(embeddings):",
+        "detail": "server.csv_query",
+        "documentation": {}
+    },
+    {
+        "label": "embeddings",
+        "kind": 5,
+        "importPath": "server.csv_query",
+        "description": "server.csv_query",
+        "peekOfCode": "embeddings = [llm.embed(text) for text in df['combined']]\n# create qdrant client\nclient = QdrantClient(host=\"localhost\", port=6333)\ncollection_name = \"test_collection\"\nclient.recreate_collection(collection_name=collection_name, vector_size=len(embeddings[0]), distance='Cosine')\n# upload to qdrant\nfor i, emb in enumerate(embeddings):",
+        "detail": "server.csv_query",
+        "documentation": {}
+    },
+    {
+        "label": "client",
+        "kind": 5,
+        "importPath": "server.csv_query",
+        "description": "server.csv_query",
+        "peekOfCode": "client = QdrantClient(host=\"localhost\", port=6333)\ncollection_name = \"test_collection\"\nclient.recreate_collection(collection_name=collection_name, vector_size=len(embeddings[0]), distance='Cosine')\n# upload to qdrant\nfor i, emb in enumerate(embeddings):",
+        "detail": "server.csv_query",
+        "documentation": {}
+    },
+    {
+        "label": "collection_name",
+        "kind": 5,
+        "importPath": "server.csv_query",
+        "description": "server.csv_query",
+        "peekOfCode": "collection_name = \"test_collection\"\nclient.recreate_collection(collection_name=collection_name, vector_size=len(embeddings[0]), distance='Cosine')\n# upload to qdrant\nfor i, emb in enumerate(embeddings):",
+        "detail": "server.csv_query",
         "documentation": {}
     },
     {

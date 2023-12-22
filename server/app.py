@@ -120,7 +120,9 @@ def handle_save_chat():
     # insert table entry
     # data, count = supabase_client.table('chats').insert(
     #    {"id": file, "title": chat_title, "file_id": file_id, "created_at": datetime.now(), "user_id": user_id}).execute()
-    return jsonify({"status": "success"})
+    response = jsonify({"status": "success"})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 
 if __name__ == '__main__':
