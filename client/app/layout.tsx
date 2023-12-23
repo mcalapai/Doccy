@@ -25,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className}`}>
+      <body className={`${inter.className} bg-black`}>
         <ToasterProvier />
         <SupabaseProvider>
           <UserProvider>
@@ -46,7 +46,7 @@ export default function RootLayout({
                 {/*<Toaster />*/}
                 <ToastContainer />
 
-                <div className="w-full bottom-0 p-4 pt-[1px] sticky bg-background-secondary">
+                <div className="w-full bottom-0 p-4 pt-[4px] sticky bg-background-secondary">
                   <div className="flex h-[66px]">
                     <ChatBoxHost />
                   </div>

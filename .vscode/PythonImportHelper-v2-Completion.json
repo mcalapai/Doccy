@@ -65,6 +65,31 @@
         "documentation": {}
     },
     {
+        "label": "langchain.vectorstores",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "langchain.vectorstores",
+        "description": "langchain.vectorstores",
+        "detail": "langchain.vectorstores",
+        "documentation": {}
+    },
+    {
+        "label": "qdrant",
+        "importPath": "langchain.vectorstores",
+        "description": "langchain.vectorstores",
+        "isExtraImport": true,
+        "detail": "langchain.vectorstores",
+        "documentation": {}
+    },
+    {
+        "label": "Qdrant",
+        "importPath": "langchain.vectorstores",
+        "description": "langchain.vectorstores",
+        "isExtraImport": true,
+        "detail": "langchain.vectorstores",
+        "documentation": {}
+    },
+    {
         "label": "pandas",
         "kind": 6,
         "isExtraImport": true,
@@ -171,22 +196,6 @@
         "description": "langchain.embeddings",
         "isExtraImport": true,
         "detail": "langchain.embeddings",
-        "documentation": {}
-    },
-    {
-        "label": "qdrant",
-        "importPath": "langchain.vectorstores",
-        "description": "langchain.vectorstores",
-        "isExtraImport": true,
-        "detail": "langchain.vectorstores",
-        "documentation": {}
-    },
-    {
-        "label": "Qdrant",
-        "importPath": "langchain.vectorstores",
-        "description": "langchain.vectorstores",
-        "isExtraImport": true,
-        "detail": "langchain.vectorstores",
         "documentation": {}
     },
     {
@@ -423,7 +432,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_user_query():\n    gpt_query = request.form.get('query')\n    user_token = request.form.get('access_token')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    files_content = [files[file] for file in files]\n    file_names = [file.filename for file in files_content]\n    if files:\n        # create collection from files\n        # then run query on new collection",
+        "peekOfCode": "def handle_user_query():\n    global qdrant_object\n    gpt_query = request.form.get('query')\n    user_token = request.form.get('access_token')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    files_content = [files[file] for file in files]\n    file_names = [file.filename for file in files_content]\n    print(\"Conversation:\", qdrant_object.conversation)\n    print(\"Chat:\", qdrant_object.chat_history)",
         "detail": "server.app",
         "documentation": {}
     },
@@ -432,7 +441,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_get_collections():\n    collections = qdrant_object.get_existing_collections()\n    print(collections)\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response\n@app.route('/api/user/save-chat', methods=['POST'])\ndef handle_save_chat():\n    print(\"break 1\")\n    chat_title = request.form.get('title')",
+        "peekOfCode": "def handle_get_collections():\n    global qdrant_object\n    qdrant_object = QDrantClient()\n    collections = qdrant_object.get_existing_collections()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response\n@app.route('/api/user/save-chat', methods=['POST'])\ndef handle_save_chat():\n    print(\"break 1\")",
         "detail": "server.app",
         "documentation": {}
     },
@@ -450,7 +459,7 @@
         "kind": 5,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "app = Flask(__name__)\n#CORS(app)\n#CORS(app, supports_credentials=True)\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')\n    print(\"new chat: \" + new_chat)",
+        "peekOfCode": "app = Flask(__name__)\nCORS(app)\nglobal qdrant_object\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')\n    print(\"new chat: \" + new_chat)",
         "detail": "server.app",
         "documentation": {}
     },

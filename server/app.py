@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
 # py imports
+import langchain.vectorstores
 import pandas as pd
 import os
 import json
@@ -16,8 +17,9 @@ from supabase import create_client, Client
 
 # app instance
 app = Flask(__name__)
-#CORS(app)
-#CORS(app, supports_credentials=True)
+CORS(app)
+
+global qdrant_object
 
 
 @app.route('/api/guest/query', methods=['POST'])
@@ -46,6 +48,8 @@ def handle_guest_query():
 
 @app.route('/api/user/query', methods=['POST'])
 def handle_user_query():
+    global qdrant_object
+    
     gpt_query = request.form.get('query')
     user_token = request.form.get('access_token')
     files = request.files.to_dict()
@@ -54,11 +58,16 @@ def handle_user_query():
     files_content = [files[file] for file in files]
     file_names = [file.filename for file in files_content]
 
+    print("Conversation:", qdrant_object.conversation)
+    print("Chat:", qdrant_object.chat_history)
+
+    if qdrant_object.collection == "":
+        qdrant_object.set_collection(collection)
+
     if files:
         # create collection from files
         # then run query on new collection
         qdrant_object.create_vector_store(files_content, collection)
-        qdrant_object.set_collection(collection)
         response = qdrant_object.handle_user_input(gpt_query)
 
         response = jsonify({"status": "success", "chat_history": response})
@@ -67,26 +76,19 @@ def handle_user_query():
     else:
         print("Query from existing collection ", collection)
 
-        qdrant_object.set_collection(collection)
         response = qdrant_object.handle_user_input(gpt_query)
 
         response = jsonify({"status": "success", "chat_history": response})
         response.headers.add('Access-Control-Allow-Origin', '*')
         return response
-        # run query from collection name
-
-    # chat_history = qdrant_object.handle_user_input(gpt_query)
-
-    # if chat_history:
-    #    return jsonify({"status": "success", "chat_history": chat_history})
-    # else:
-    #    return jsonify({"status": "failure", "received_data": data})
 
 
 @app.route('/api/get-collections', methods=['GET'])
 def handle_get_collections():
+    global qdrant_object
+    qdrant_object = QDrantClient()
     collections = qdrant_object.get_existing_collections()
-    print(collections)
+    
     response = jsonify({"collections": collections})
     response.headers.add('Access-Control-Allow-Origin', '*')
 
@@ -126,7 +128,6 @@ def handle_save_chat():
 if __name__ == '__main__':
     supabase_url = os.environ.get('SUPABASE_URL')
     supabase_key = os.environ.get('SUPABASE_KEY')
-
-    qdrant_object = QDrantClient()
+    
     supabase_client: Client = create_client(supabase_url, supabase_key)
     app.run(debug=True)

@@ -31,7 +31,7 @@ export default function Home() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col lg:px-[200px] xl:px-[400px] py-5 gap-y-[48px]">
+        <div className="flex flex-col lg:px-[200px] xl:px-[300px] py-5 gap-y-[48px]">
           {chatHistory.map((item, index) => {
             const from = index % 2 === 0 ? "You" : "Doccy";
             return (

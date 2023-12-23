@@ -5,6 +5,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import qdrant
 import qdrant_client
+
 from qdrant_client.http.models import models
 from langchain.vectorstores import Qdrant
 from langchain.chains import RetrievalQA
