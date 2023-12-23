@@ -441,7 +441,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_get_collections():\n    global qdrant_object\n    qdrant_object = QDrantClient()\n    collections = qdrant_object.get_existing_collections()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response\n@app.route('/api/user/save-chat', methods=['POST'])\ndef handle_save_chat():\n    print(\"break 1\")",
+        "peekOfCode": "def handle_get_collections():\n    global qdrant_object\n    qdrant_object = QDrantClient()\n    collections = qdrant_object.get_existing_collections()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response\n@app.route('/api/user/save-chat', methods=['POST'])\ndef handle_save_chat():\n    global qdrant_object",
         "detail": "server.app",
         "documentation": {}
     },
@@ -450,7 +450,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_save_chat():\n    print(\"break 1\")\n    chat_title = request.form.get('title')\n    user_id = \"\"  # how to do this?\n    file_id = \"\"  # generate file uuid\n    file = qdrant_object.conversation\n    pickled_file = pickle.dumps(file)\n    file_name = f\"{chat_title}.pkl\"\n    # check if folder exists/create folder\n    if not utils.check_bucket_folder_exists(supabase_client, \"chats\", f\"{user_id}\"):",
+        "peekOfCode": "def handle_save_chat():\n    global qdrant_object\n    print(\"break 1\")\n    chat_title = request.form.get('title')\n    user_id = request.form.get('user_id')  # how to do this?\n    file_id = request.form.get('file_id')  # generate file uuid\n    file = qdrant_object.get_conversation_memory()\n    pickled_file = pickle.dumps(file)\n    file_name = f\"{file_id}.pkl\"\n    # check if folder exists/create folder",
         "detail": "server.app",
         "documentation": {}
     },
@@ -459,7 +459,7 @@
         "kind": 5,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "app = Flask(__name__)\nCORS(app)\nglobal qdrant_object\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')\n    print(\"new chat: \" + new_chat)",
+        "peekOfCode": "app = Flask(__name__)\n#CORS(app)\nglobal qdrant_object\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')\n    print(\"new chat: \" + new_chat)",
         "detail": "server.app",
         "documentation": {}
     },
@@ -477,7 +477,7 @@
         "kind": 2,
         "importPath": "server.utils",
         "description": "server.utils",
-        "peekOfCode": "def check_bucket_folder_exists(supabase_client, bucket_name, folder_name):\n    if not folder_name.endswith(\"/\"):\n        folder_name += \"/\"\n    response = supabase_client.storage().from_(\n        bucket_name).list(folder_name, {\"limit\": 1})\n    if response.data and len(response.data) > 0:\n        return True\n    return False\ndef create_bucket_folder(supabase_client, bucket_name, folder_name):\n    if not folder_name.endswith(\"/\"):",
+        "peekOfCode": "def check_bucket_folder_exists(supabase_client, bucket_name, folder_name):\n    if not folder_name.endswith(\"/\"):\n        folder_name += \"/\"\n    response = supabase_client.storage.from_(bucket_name).list(folder_name)\n    print(\"Response: \", response)\n    print(\"Response length: \", len(response))\n    print(\"Response type: \", type(response))\n    if response and len(response) > 0:\n        return True\n    return False",
         "detail": "server.utils",
         "documentation": {}
     },
@@ -486,7 +486,7 @@
         "kind": 2,
         "importPath": "server.utils",
         "description": "server.utils",
-        "peekOfCode": "def create_bucket_folder(supabase_client, bucket_name, folder_name):\n    if not folder_name.endswith(\"/\"):\n        folder_name += \"/\"\n    response = supabase_client.storage().from_(\n        bucket_name).upload(folder_name + '.placeholder', b'', 'application/octet-stream')\n    if response.get(\"error\") is None:\n        return True\n    return False",
+        "peekOfCode": "def create_bucket_folder(supabase_client, bucket_name, folder_name):\n    if not folder_name.endswith(\"/\"):\n        folder_name += \"/\"\n    response = supabase_client.storage.from_(\n        bucket_name).upload(path=folder_name + '.placeholder', file=b'', file_options={\"content-type\":'application/octet-stream'})\n    #if response.get(\"error\") is None:\n        #return True\n    #return False\n    print(\"Upload response: \", response)",
         "detail": "server.utils",
         "documentation": {}
     }

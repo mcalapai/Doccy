@@ -124,14 +124,19 @@ class QDrantClient():
 
         print("Created vector store")
 
+    def get_conversation_memory(self):
+        return self.conversation.memory
+
 
 def check_bucket_folder_exists(supabase_client, bucket_name, folder_name):
     if not folder_name.endswith("/"):
         folder_name += "/"
 
-    response = supabase_client.storage().from_(
-        bucket_name).list(folder_name, {"limit": 1})
-    if response.data and len(response.data) > 0:
+    response = supabase_client.storage.from_(bucket_name).list(folder_name)
+    print("Response: ", response)
+    print("Response length: ", len(response))
+    print("Response type: ", type(response))
+    if response and len(response) > 0:
         return True
     return False
 
@@ -140,8 +145,9 @@ def create_bucket_folder(supabase_client, bucket_name, folder_name):
     if not folder_name.endswith("/"):
         folder_name += "/"
 
-    response = supabase_client.storage().from_(
-        bucket_name).upload(folder_name + '.placeholder', b'', 'application/octet-stream')
-    if response.get("error") is None:
-        return True
-    return False
+    response = supabase_client.storage.from_(
+        bucket_name).upload(path=folder_name + '.placeholder', file=b'', file_options={"content-type":'application/octet-stream'})
+    #if response.get("error") is None:
+        #return True
+    #return False
+    print("Upload response: ", response)

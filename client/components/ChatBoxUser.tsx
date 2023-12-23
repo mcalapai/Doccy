@@ -123,6 +123,7 @@ const ChatBoxUser = () => {
   };
 
   const onSubmit = (input: string) => {
+    let newId = "";
     if (documents.length === 0 && currentCollection === "") {
       toast(
         "Doccy has no context :( please specify a collection or make one!",
@@ -136,12 +137,10 @@ const ChatBoxUser = () => {
     }
     if (userDetails && accessToken) {
       if (sessionID === null) {
-        const newId = uuid();
+        newId = uuid();
         setSessionID(newId);
         setIsNewChat(false);
-        saveChat(userDetails?.id, newId);
-      } else {
-        saveChat(userDetails?.id, sessionID);
+        //saveChat(userDetails?.id, newId);
       }
       setChatHistory((currentChatHistory) => [...currentChatHistory, input]);
       if (documents.length > 0) {
@@ -155,6 +154,10 @@ const ChatBoxUser = () => {
       } else {
         // selecting existing collection
         userPostData(input, accessToken, currentCollection);
+      }
+      if (newId) {
+        console.log("Chat saved");
+        saveChat(userDetails?.id, newId);
       }
     }
 

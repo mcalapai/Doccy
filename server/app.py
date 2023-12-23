@@ -17,7 +17,7 @@ from supabase import create_client, Client
 
 # app instance
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
 
 global qdrant_object
 
@@ -97,32 +97,41 @@ def handle_get_collections():
 
 @app.route('/api/user/save-chat', methods=['POST'])
 def handle_save_chat():
+    global qdrant_object
     print("break 1")
     chat_title = request.form.get('title')
-    user_id = ""  # how to do this?
-    file_id = ""  # generate file uuid
-    file = qdrant_object.conversation
+    user_id = request.form.get('user_id')  # how to do this?
+    file_id = request.form.get('file_id')  # generate file uuid
+    file = qdrant_object.get_conversation_memory()
     pickled_file = pickle.dumps(file)
-    file_name = f"{chat_title}.pkl"
+    file_name = f"{file_id}.pkl"
 
     # check if folder exists/create folder
-    if not utils.check_bucket_folder_exists(supabase_client, "chats", f"{user_id}"):
-        utils.create_bucket_folder(supabase_client, "chats", f"{user_id}")
+    bucket_exists = utils.check_bucket_folder_exists(supabase_client, "chats", f"/{user_id}")
+    if not bucket_exists:
+        print("------------------------")
+        print("Folder already exists")
+        print("------------------------")
+        utils.create_bucket_folder(supabase_client, "chats", f"/{user_id}")
 
     # upload .pkl file to bucket
     full_path = f"{user_id}/{file_name}"
-    response = supabase_client.storage().from_(
-        "chats").upload(full_path, pickled_file)
+    response = supabase_client.storage.from_(
+        "chats").upload(file=pickled_file, path=full_path, file_options={"content-type": "application/octet-stream"})
     # Check if the upload was successful
-    if response.get('error') is None:
-        print("Upload successful")
-    else:
-        print("Error:", response.get('error'))
+    print("Total response: ", response)
+    #if response.get('error') is None:
+    #    print("Upload successful")
+    #else:
+    #    print("Error:", response.get('error'))
 
     # insert table entry
     # data, count = supabase_client.table('chats').insert(
     #    {"id": file, "title": chat_title, "file_id": file_id, "created_at": datetime.now(), "user_id": user_id}).execute()
-    return jsonify({"status": "success"})
+    response = jsonify({"status": "success"})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response
 
 
 if __name__ == '__main__':
