@@ -455,6 +455,15 @@
         "documentation": {}
     },
     {
+        "label": "handle_get_chat_list",
+        "kind": 2,
+        "importPath": "server.app",
+        "description": "server.app",
+        "peekOfCode": "def handle_get_chat_list():\n    global qdrant_object\n    global supabase_client\n    user_token = request.form.get('access_token')\n    supabase_client = create_client(supabase_url, supabase_key)\n    all_chats = supabase_client.table('chats').select(\"*\").execute()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response\n@app.route('/api/user/save-chat', methods=['POST'])",
+        "detail": "server.app",
+        "documentation": {}
+    },
+    {
         "label": "handle_save_chat",
         "kind": 2,
         "importPath": "server.app",
