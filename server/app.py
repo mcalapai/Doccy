@@ -102,6 +102,20 @@ def handle_get_collections():
 
     return response
 
+@app.route('/api/get-chat-list', methods=['GET'])
+def handle_get_chat_list():
+    global qdrant_object
+    global supabase_client
+
+    user_token = request.form.get('access_token')
+
+    supabase_client = create_client(supabase_url, supabase_key)
+    all_chats = supabase_client.table('chats').select("*").execute()
+    
+    response = jsonify({"collections": collections})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response
 
 @app.route('/api/user/save-chat', methods=['POST'])
 def handle_save_chat():

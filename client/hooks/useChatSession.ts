@@ -1,3 +1,4 @@
+import { Database } from "@/types_db";
 import { create } from "zustand";
 
 interface ChatSessionStore {
@@ -7,6 +8,8 @@ interface ChatSessionStore {
   setChatHistory: (update: string[] | ((oldChatHistory: string[]) => string[])) => void;
   loadingResponse: boolean;
   setLoadingResponse: (newLoadingResponse: boolean) => void;
+  savedChats: Database['public']['Tables']['chats']['Row'][] | null;
+  setSavedChats: (newSavedChats: Database['public']['Tables']['chats']['Row'][] | null) => void;
 }
 
 const useChatSession = create<ChatSessionStore>((set) => ({
@@ -22,6 +25,8 @@ const useChatSession = create<ChatSessionStore>((set) => ({
   },
   loadingResponse: false,
   setLoadingResponse: (isLoading) => set({loadingResponse: isLoading}),
+  savedChats: null,
+  setSavedChats: (newSavedChats) => set({savedChats: newSavedChats})
 }))
 
 export default useChatSession;
