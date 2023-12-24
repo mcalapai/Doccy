@@ -95,13 +95,18 @@ const ChatBoxUser = () => {
     setLoadingResponse(false);
   };
 
-  const saveChat = async (userId: string, sessionId: string) => {
-    setLoadingResponse(true);
+  const saveChat = async (
+    accessToken: string,
+    userId: string,
+    sessionId: string
+  ) => {
+    //setLoadingResponse(true);
 
     const formData = new FormData();
     formData.append("chat_title", "UserChatTest");
     formData.append("user_id", userId);
     formData.append("file_id", sessionId);
+    formData.append("access_token", accessToken);
 
     const endpoint = "http://127.0.0.1:5000/api/user/save-chat";
     try {
@@ -155,25 +160,46 @@ const ChatBoxUser = () => {
         // selecting existing collection
         userPostData(input, accessToken, currentCollection);
       }
-      if (newId) {
-        console.log("Chat saved");
-        saveChat(userDetails?.id, newId);
-      }
     }
 
     setDocuments([]);
   };
 
+  useEffect(() => {
+    if (accessToken && userDetails && sessionID && loadingResponse === false) {
+      console.log("Session ID:", sessionID);
+      console.log("Saved chat");
+      saveChat(accessToken, userDetails?.id, sessionID);
+    }
+  }, [loadingResponse]);
+
+  const getCollectionData = async (userId: string) => {
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("chat_title", "UserChatTest");
+    formData.append("access_token", userId);
+
+    const endpoint = "http://127.0.0.1:5000/api/get-collections";
+    try {
+      const response = await fetch(endpoint, {
+        method: "GET",
+        body: formData,
+      });
+      const data = await response.json();
+
+      setCollections(data.collections);
+    } catch (error) {
+      console.log(error);
+    }
+    setLoading(false);
+  };
+
   // fetch collection data
   useEffect(() => {
-    setLoading(true);
-    fetch(`http://127.0.0.1:5000/api/get-collections`)
-      .then((response) => response.json())
-      .then((data) => {
-        //console.log("Collections", data.collections);
-        setCollections(data.collections);
-        setLoading(false);
-      });
+    if (userDetails) {
+      getCollectionData(userDetails?.id);
+    }
   }, []);
 
   return (

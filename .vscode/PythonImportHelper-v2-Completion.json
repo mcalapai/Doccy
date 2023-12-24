@@ -134,6 +134,15 @@
         "documentation": {}
     },
     {
+        "label": "requests",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "requests",
+        "description": "requests",
+        "detail": "requests",
+        "documentation": {}
+    },
+    {
         "label": "utils",
         "kind": 6,
         "isExtraImport": true,
@@ -441,7 +450,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_get_collections():\n    global qdrant_object\n    qdrant_object = QDrantClient()\n    collections = qdrant_object.get_existing_collections()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response\n@app.route('/api/user/save-chat', methods=['POST'])\ndef handle_save_chat():\n    global qdrant_object",
+        "peekOfCode": "def handle_get_collections():\n    global qdrant_object\n    global supabase_client\n    user_token = request.form.get('access_token')\n    qdrant_object = QDrantClient()\n    supabase_client = create_client(supabase_url, supabase_key)\n    collections = qdrant_object.get_existing_collections()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response",
         "detail": "server.app",
         "documentation": {}
     },
@@ -450,7 +459,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_save_chat():\n    global qdrant_object\n    print(\"break 1\")\n    chat_title = request.form.get('title')\n    user_id = request.form.get('user_id')  # how to do this?\n    file_id = request.form.get('file_id')  # generate file uuid\n    file = qdrant_object.get_conversation_memory()\n    pickled_file = pickle.dumps(file)\n    file_name = f\"{file_id}.pkl\"\n    # check if folder exists/create folder",
+        "peekOfCode": "def handle_save_chat():\n    global qdrant_object\n    global supabase_client\n    chat_title = request.form.get('chat_title')\n    user_id = request.form.get('user_id')  # how to do this?\n    file_id = request.form.get('file_id')  # generate file uuid\n    file = qdrant_object.get_conversation_memory()\n    pickled_file = pickle.dumps(file)\n    file_name = f\"{file_id}.pkl\"\n    access_token = request.form.get('access_token')",
         "detail": "server.app",
         "documentation": {}
     },
@@ -459,7 +468,7 @@
         "kind": 5,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "app = Flask(__name__)\n#CORS(app)\nglobal qdrant_object\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')\n    print(\"new chat: \" + new_chat)",
+        "peekOfCode": "app = Flask(__name__)\n#CORS(app)\nglobal qdrant_object\nglobal supabase_client\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')",
         "detail": "server.app",
         "documentation": {}
     },
@@ -477,7 +486,25 @@
         "kind": 2,
         "importPath": "server.utils",
         "description": "server.utils",
-        "peekOfCode": "def check_bucket_folder_exists(supabase_client, bucket_name, folder_name):\n    if not folder_name.endswith(\"/\"):\n        folder_name += \"/\"\n    response = supabase_client.storage.from_(bucket_name).list(folder_name)\n    print(\"Response: \", response)\n    print(\"Response length: \", len(response))\n    print(\"Response type: \", type(response))\n    if response and len(response) > 0:\n        return True\n    return False",
+        "peekOfCode": "def check_bucket_folder_exists(supabase_client, bucket_name, folder_name):\n    if not folder_name.endswith(\"/\"):\n        folder_name += \"/\"\n    response = supabase_client.storage.from_(bucket_name).list(folder_name)\n    if response and len(response) > 0:\n        return True\n    return False\ndef check_table_entry_exists(supabase_client, file_id):\n    response = supabase_client.table('chats').select(\"*\").execute()\n    if any(data['file_path'] == file_id for data in response.data):",
+        "detail": "server.utils",
+        "documentation": {}
+    },
+    {
+        "label": "check_table_entry_exists",
+        "kind": 2,
+        "importPath": "server.utils",
+        "description": "server.utils",
+        "peekOfCode": "def check_table_entry_exists(supabase_client, file_id):\n    response = supabase_client.table('chats').select(\"*\").execute()\n    if any(data['file_path'] == file_id for data in response.data):\n        return True\ndef save_chat_to_file(supabase_client, bucket_name, folder_name, file_name, pickled_file):\n    if not folder_name.endswith(\"/\"):\n        folder_name += \"/\"\n    files = supabase_client.storage.from_(bucket_name).list(folder_name)\n    file_exists = any(file['name'] == file_name for file in files)\n    file_path = f\"{folder_name}{file_name}\"",
+        "detail": "server.utils",
+        "documentation": {}
+    },
+    {
+        "label": "save_chat_to_file",
+        "kind": 2,
+        "importPath": "server.utils",
+        "description": "server.utils",
+        "peekOfCode": "def save_chat_to_file(supabase_client, bucket_name, folder_name, file_name, pickled_file):\n    if not folder_name.endswith(\"/\"):\n        folder_name += \"/\"\n    files = supabase_client.storage.from_(bucket_name).list(folder_name)\n    file_exists = any(file['name'] == file_name for file in files)\n    file_path = f\"{folder_name}{file_name}\"\n    if file_exists:\n        delete_response = supabase_client.storage.from_(bucket_name).remove([file_path])\n    response = supabase_client.storage.from_(\n        \"chats\").upload(file=pickled_file, path=file_path, file_options={\"content-type\": \"application/octet-stream\"})",
         "detail": "server.utils",
         "documentation": {}
     },

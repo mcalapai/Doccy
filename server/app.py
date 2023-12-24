@@ -10,6 +10,7 @@ import json
 import numpy as np
 import pickle
 from datetime import datetime
+import requests
 
 from utils import QDrantClient
 import utils
@@ -20,6 +21,7 @@ app = Flask(__name__)
 #CORS(app)
 
 global qdrant_object
+global supabase_client
 
 
 @app.route('/api/guest/query', methods=['POST'])
@@ -86,7 +88,13 @@ def handle_user_query():
 @app.route('/api/get-collections', methods=['GET'])
 def handle_get_collections():
     global qdrant_object
+    global supabase_client
+
+    user_token = request.form.get('access_token')
+
     qdrant_object = QDrantClient()
+    supabase_client = create_client(supabase_url, supabase_key)
+
     collections = qdrant_object.get_existing_collections()
     
     response = jsonify({"collections": collections})
@@ -98,36 +106,39 @@ def handle_get_collections():
 @app.route('/api/user/save-chat', methods=['POST'])
 def handle_save_chat():
     global qdrant_object
-    print("break 1")
-    chat_title = request.form.get('title')
+    global supabase_client
+
+    chat_title = request.form.get('chat_title')
     user_id = request.form.get('user_id')  # how to do this?
     file_id = request.form.get('file_id')  # generate file uuid
     file = qdrant_object.get_conversation_memory()
     pickled_file = pickle.dumps(file)
     file_name = f"{file_id}.pkl"
+    access_token = request.form.get('access_token')
+    file_path = f"chats/{user_id}/{file_name}"
+
+    data = {"id": file_id, "title": chat_title, "file_path": file_path, "created_at": datetime.utcnow().isoformat(), "user_id": user_id}
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "apikey": supabase_key,  # Replace with your Supabase API key
+        "Content-Type": "application/json"
+    }
+
+    endpoint = supabase_url + "/rest/v1/chats"
 
     # check if folder exists/create folder
-    bucket_exists = utils.check_bucket_folder_exists(supabase_client, "chats", f"/{user_id}")
-    if not bucket_exists:
-        print("------------------------")
-        print("Folder already exists")
-        print("------------------------")
-        utils.create_bucket_folder(supabase_client, "chats", f"/{user_id}")
+    if not utils.check_bucket_folder_exists(supabase_client, "chats", f"{user_id}"):
+        utils.create_bucket_folder(supabase_client, "chats", f"{user_id}")
 
-    # upload .pkl file to bucket
-    full_path = f"{user_id}/{file_name}"
-    response = supabase_client.storage.from_(
-        "chats").upload(file=pickled_file, path=full_path, file_options={"content-type": "application/octet-stream"})
-    # Check if the upload was successful
-    print("Total response: ", response)
-    #if response.get('error') is None:
-    #    print("Upload successful")
-    #else:
-    #    print("Error:", response.get('error'))
+    # check if file exists for chat session - if it does, delete and overwrite
+    save_res = utils.save_chat_to_file(supabase_client, bucket_name="chats", folder_name=f"{user_id}", 
+                            file_name=file_name, pickled_file=pickled_file)
+    
+    if not utils.check_table_entry_exists(supabase_client, file_id=file_id):
+        insert_res = requests.post(endpoint, json=[data], headers=headers)
+        print("Insert Res: ", insert_res.text)
 
-    # insert table entry
-    # data, count = supabase_client.table('chats').insert(
-    #    {"id": file, "title": chat_title, "file_id": file_id, "created_at": datetime.now(), "user_id": user_id}).execute()
     response = jsonify({"status": "success"})
     response.headers.add('Access-Control-Allow-Origin', '*')
 
@@ -138,5 +149,4 @@ if __name__ == '__main__':
     supabase_url = os.environ.get('SUPABASE_URL')
     supabase_key = os.environ.get('SUPABASE_KEY')
     
-    supabase_client: Client = create_client(supabase_url, supabase_key)
     app.run(debug=True)

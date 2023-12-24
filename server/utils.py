@@ -133,13 +133,31 @@ def check_bucket_folder_exists(supabase_client, bucket_name, folder_name):
         folder_name += "/"
 
     response = supabase_client.storage.from_(bucket_name).list(folder_name)
-    print("Response: ", response)
-    print("Response length: ", len(response))
-    print("Response type: ", type(response))
     if response and len(response) > 0:
         return True
     return False
 
+def check_table_entry_exists(supabase_client, file_id):
+    response = supabase_client.table('chats').select("*").execute()
+    if any(data['file_path'] == file_id for data in response.data):
+        return True
+
+def save_chat_to_file(supabase_client, bucket_name, folder_name, file_name, pickled_file):
+    if not folder_name.endswith("/"):
+        folder_name += "/"
+
+    files = supabase_client.storage.from_(bucket_name).list(folder_name)
+    file_exists = any(file['name'] == file_name for file in files)
+
+    file_path = f"{folder_name}{file_name}"
+
+    if file_exists:
+        delete_response = supabase_client.storage.from_(bucket_name).remove([file_path])
+    
+    response = supabase_client.storage.from_(
+        "chats").upload(file=pickled_file, path=file_path, file_options={"content-type": "application/octet-stream"})
+    
+    return response
 
 def create_bucket_folder(supabase_client, bucket_name, folder_name):
     if not folder_name.endswith("/"):
