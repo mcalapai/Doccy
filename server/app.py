@@ -60,17 +60,20 @@ def handle_user_query():
     files_content = [files[file] for file in files]
 
     if qdrant_object.collection == "":
-        qdrant_object.set_collection(collection)
+        vector_store = qdrant_object.set_collection(collection)
 
     if files:
         # create collection from files
         # then run query on new collection
-        qdrant_object.create_vector_store(files_content, collection)
+        vector_store = qdrant_object.create_vector_store(files_content, collection)
         response = qdrant_object.handle_user_input(gpt_query)
     else:
         response = qdrant_object.handle_user_input(gpt_query)
 
-    chat_title = qdrant_object.generate_chat_title(gpt_query)
+    try:
+        chat_title = qdrant_object.generate_chat_title(gpt_query, vector_store)
+    except:
+        chat_title = "undefined"
 
     response = jsonify({"status": "success", "chat_history": response, "chat_title": chat_title})
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -100,13 +103,15 @@ def handle_save_chat():
     chat_title = request.form.get('chat_title')
     user_id = request.form.get('user_id')  # how to do this?
     file_id = request.form.get('file_id')  # generate file uuid
+    collection_name = request.form.get('collection_name')
+
     file = qdrant_object.get_conversation_memory()
     pickled_file = pickle.dumps(file)
     file_name = f"{file_id}.pkl"
     access_token = request.form.get('access_token')
     file_path = f"chats/{user_id}/{file_name}"
 
-    data = {"id": file_id, "title": chat_title, "file_path": file_path, "created_at": datetime.utcnow().isoformat(), "user_id": user_id}
+    data = {"id": file_id, "title": chat_title, "file_path": file_path, "created_at": datetime.utcnow().isoformat(), "user_id": user_id, "collection_name": collection_name}
 
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -140,6 +145,7 @@ def handle_load_saved_chat():
     file_path = request.form.get('file_path')
     file_path = file_path.replace("chats/", "")
     access_token = request.form.get('access_token')
+    collection_name = request.form.get('collection_name')
 
     stream = io.BytesIO()
 
@@ -157,7 +163,7 @@ def handle_load_saved_chat():
     ## set collection?
 
     ## set conversation memory
-    chat_history = qdrant_object.set_conversation_memory(file)
+    chat_history = qdrant_object.set_conversation_memory(file, collection_name)
 
     response = jsonify({"chat_history": chat_history})
     response.headers.add('Access-Control-Allow-Origin', '*')

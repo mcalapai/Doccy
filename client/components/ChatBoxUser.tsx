@@ -95,7 +95,6 @@ const ChatBoxUser = () => {
     let newID: string;
     let currentSessionID;
     let postDataPromise;
-    let saveChatPromise;
     if (documents.length === 0 && currentCollection === "") {
       toast(
         "Doccy has no context :( please specify a collection or make one!",
@@ -135,7 +134,8 @@ const ChatBoxUser = () => {
           accessToken,
           chatTitle,
           userDetails?.id,
-          currentSessionID
+          currentSessionID,
+          currentCollection
         ).then(() => {
           getChatHistory(supabase, userDetails?.id)
             .then(setSavedChats)

@@ -450,7 +450,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_user_query():\n    global qdrant_object\n    gpt_query = request.form.get('query')\n    user_token = request.form.get('access_token')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    files_content = [files[file] for file in files]\n    if qdrant_object.collection == \"\":\n        qdrant_object.set_collection(collection)\n    if files:",
+        "peekOfCode": "def handle_user_query():\n    global qdrant_object\n    gpt_query = request.form.get('query')\n    user_token = request.form.get('access_token')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    files_content = [files[file] for file in files]\n    if qdrant_object.collection == \"\":\n        vector_store = qdrant_object.set_collection(collection)\n    if files:",
         "detail": "server.app",
         "documentation": {}
     },
@@ -468,7 +468,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_save_chat():\n    global qdrant_object\n    chat_title = request.form.get('chat_title')\n    user_id = request.form.get('user_id')  # how to do this?\n    file_id = request.form.get('file_id')  # generate file uuid\n    file = qdrant_object.get_conversation_memory()\n    pickled_file = pickle.dumps(file)\n    file_name = f\"{file_id}.pkl\"\n    access_token = request.form.get('access_token')\n    file_path = f\"chats/{user_id}/{file_name}\"",
+        "peekOfCode": "def handle_save_chat():\n    global qdrant_object\n    chat_title = request.form.get('chat_title')\n    user_id = request.form.get('user_id')  # how to do this?\n    file_id = request.form.get('file_id')  # generate file uuid\n    collection_name = request.form.get('collection_name')\n    file = qdrant_object.get_conversation_memory()\n    pickled_file = pickle.dumps(file)\n    file_name = f\"{file_id}.pkl\"\n    access_token = request.form.get('access_token')",
         "detail": "server.app",
         "documentation": {}
     },
@@ -477,7 +477,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_load_saved_chat():\n    global qdrant_object\n    file_path = request.form.get('file_path')\n    file_path = file_path.replace(\"chats/\", \"\")\n    access_token = request.form.get('access_token')\n    stream = io.BytesIO()\n    res = supabase_client.storage.from_(\"chats\").download(file_path)\n    stream.write(res)\n    stream.seek(0)\n    ## load pickle file from stream",
+        "peekOfCode": "def handle_load_saved_chat():\n    global qdrant_object\n    file_path = request.form.get('file_path')\n    file_path = file_path.replace(\"chats/\", \"\")\n    access_token = request.form.get('access_token')\n    collection_name = request.form.get('collection_name')\n    stream = io.BytesIO()\n    res = supabase_client.storage.from_(\"chats\").download(file_path)\n    stream.write(res)\n    stream.seek(0)",
         "detail": "server.app",
         "documentation": {}
     },

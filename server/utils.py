@@ -78,9 +78,18 @@ class QDrantClient():
 
         return response['answer']
     
-    def generate_chat_title(self, initial_query):
+    def generate_chat_title(self, initial_query, vector_store):
+        ## create new conversation chain
+        llm = ChatOpenAI(model_name="gpt-4")
+
+        conversation_chain = ConversationalRetrievalChain.from_llm(
+            llm=llm,
+            retriever=vector_store.as_retriever()
+        )
+
+        ## prompt for title
         prompt = "Generate a short, concise title for the following query based on the context provided. The title should only be a few words long (5 words MAXIMUM). It is a title providing context to the query/chat. Return the title as pure plain text that contains only the title. The content is as follows:"
-        response = self.conversation(
+        response = conversation_chain(
             {'question': prompt + "\n" + initial_query, "chat_history": self.chat_history})
         response = str(response['answer']).replace('"', "").strip()
         
@@ -107,6 +116,8 @@ class QDrantClient():
         # create conversation chain
         self.conversation = self.get_conversation_chain(
             current_vector_store)
+        
+        return current_vector_store
 
     def create_vector_store(self, files, collection_name):
         # get pdf text
@@ -126,17 +137,19 @@ class QDrantClient():
         # add documents to vector store
         vector_store.add_texts(text_chunks)
 
-        print("Created vector store")
+        return vector_store
 
     def get_conversation_memory(self):
         return self.conversation.memory
     
-    def set_conversation_memory(self, picked_file):
+    def set_conversation_memory(self, picked_file, collection_name):
         llm = ChatOpenAI(model_name="gpt-4")
+
+        print("Collection name is ", collection_name)
 
         current_vector_store = Qdrant(
             client=self.client,
-            collection_name="MCWorkDetails",
+            collection_name=collection_name,
             embeddings=self.embeddings
         )
 

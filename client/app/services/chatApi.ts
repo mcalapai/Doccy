@@ -18,13 +18,15 @@ export const saveChat = async (
     accessToken: string,
     chatTitle: string,
     userId: string,
-    sessionId: string
+    sessionId: string,
+	collectionName: string
   ) => {
     const formData = new FormData();
     formData.append("chat_title", chatTitle);
     formData.append("user_id", userId);
     formData.append("file_id", sessionId);
     formData.append("access_token", accessToken);
+	formData.append("collection_name", collectionName);
 
     const endpoint = "http://127.0.0.1:5000/api/user/save-chat";
     try {
@@ -95,12 +97,12 @@ export const getChatHistory = async (supabase: SupabaseClient, userID: string) =
 export const loadSavedChat = async (
     accessToken: string,
     filePath: string,
+	collectionName: string
   ) => {
     const formData = new FormData();
     formData.append("file_path", filePath);
     formData.append("access_token", accessToken);
-
-	console.log("Here")
+	formData.append("collection_name", collectionName);
 
 	const endpoint = "http://127.0.0.1:5000/api/user/load-saved-chat";
 	try {

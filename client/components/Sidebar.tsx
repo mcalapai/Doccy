@@ -10,12 +10,20 @@ import Button from "./Button";
 import useChatSession from "@/hooks/useChatSession";
 import { getChatHistory, loadSavedChat } from "@/app/services/chatApi";
 import { motion, AnimatePresence, easeInOut, easeIn } from "framer-motion";
+import useCollections from "@/hooks/useCollections";
 
 const Sidebar = () => {
   const router = useRouter();
   const { user, userDetails } = useUser();
-  const { sessionID, savedChats, setSavedChats, chatHistory, setChatHistory } =
-    useChatSession();
+  const { currentCollection, setCurrentCollection } = useCollections();
+  const {
+    setSessionID,
+    sessionID,
+    savedChats,
+    setSavedChats,
+    chatHistory,
+    setChatHistory,
+  } = useChatSession();
 
   const supabase = useSupabaseClient();
 
@@ -38,11 +46,20 @@ const Sidebar = () => {
     console.log("Session id: ", sessionID);
   }, [sessionID]);
 
-  const handleLoadSavedChats = (userID: string, file_path: string) => {
-    loadSavedChat(userID, file_path).then((chats) => {
-      console.log("Chats: ", chats.chat_history);
-      setChatHistory(chats.chat_history);
-    });
+  const handleLoadSavedChats = (
+    userID: string,
+    file_path: string,
+    collection_name: string
+  ) => {
+    loadSavedChat(userID, file_path, collection_name)
+      .then((chats) => {
+        setChatHistory(chats.chat_history);
+        setCurrentCollection(collection_name);
+        setSessionID(chats.id);
+      })
+      .finally(() => {
+        console.log("Current collection: ", currentCollection);
+      });
   };
 
   return (
@@ -93,7 +110,11 @@ const Sidebar = () => {
                     <button
                       className="p-[10px] pl-[20px] w-full overflow-hidden whitespace-nowrap text-ellipsis"
                       onClick={() => {
-                        handleLoadSavedChats(userDetails?.id, chat.file_path);
+                        handleLoadSavedChats(
+                          userDetails?.id,
+                          chat.file_path,
+                          chat.collection_name
+                        );
                       }}
                     >
                       <motion.span
