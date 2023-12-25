@@ -72,18 +72,22 @@ class QDrantClient():
         return conversation_chain
 
     def handle_user_input(self, user_query):
-        print("Conversation:")
-        print(self.conversation)
-
         response = self.conversation(
             {'question': user_query, "chat_history": self.chat_history})
         self.chat_history = response['chat_history']
 
-        print(response)
-
-        # raise Exception("Error")
-
         return response['answer']
+    
+    def generate_chat_title(self, initial_query):
+        prompt = "Generate a short, concise title for the following query based on the context provided. The title should only be a few words long (5 words MAXIMUM). It is a title providing context to the query/chat. Return the title as pure plain text that contains only the title. The content is as follows:"
+        response = self.conversation(
+            {'question': prompt + "\n" + initial_query, "chat_history": self.chat_history})
+        response = str(response['answer']).replace('"', "").strip()
+        
+        print("Chat title: ", response)
+
+        return response
+
 
     def get_existing_collections(self):
         collections = self.client.get_collections().collections
@@ -126,6 +130,27 @@ class QDrantClient():
 
     def get_conversation_memory(self):
         return self.conversation.memory
+    
+    def set_conversation_memory(self, picked_file):
+        llm = ChatOpenAI(model_name="gpt-4")
+
+        current_vector_store = Qdrant(
+            client=self.client,
+            collection_name="MCWorkDetails",
+            embeddings=self.embeddings
+        )
+
+        self.conversation = ConversationalRetrievalChain.from_llm(
+            llm=llm,
+            retriever=current_vector_store.as_retriever(),
+            memory=picked_file,
+        )
+
+        convo_memory = self.conversation.memory.dict()['chat_memory']['messages']
+        chat_history = [item['content'] for item in convo_memory]
+        self.chat_history = chat_history
+
+        return chat_history
 
 
 def check_bucket_folder_exists(supabase_client, bucket_name, folder_name):

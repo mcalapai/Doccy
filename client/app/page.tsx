@@ -25,8 +25,8 @@ export default function Home() {
   return (
     <main className="h-full w-full bg-background-secondary">
       {chatHistory.length === 0 ? (
-        <div className="flex w-full h-full justify-center items-center text-center font-bold gap-x-6 -mt-[70px]">
-          <p className="text-background-primary select-none font-lustig text-[20rem] opacity-50 leading-none">
+        <div className="flex w-full h-full justify-center items-center text-center font-bold gap-x-6 -mt-[40px]">
+          <p className="text-background-tertiary select-none font-lustig text-[20rem] opacity-40 leading-none">
             Doccy
           </p>
         </div>

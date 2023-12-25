@@ -176,6 +176,15 @@
         "documentation": {}
     },
     {
+        "label": "io",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "io",
+        "description": "io",
+        "detail": "io",
+        "documentation": {}
+    },
+    {
         "label": "load_dotenv",
         "importPath": "dotenv",
         "description": "dotenv",
@@ -441,7 +450,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_user_query():\n    global qdrant_object\n    gpt_query = request.form.get('query')\n    user_token = request.form.get('access_token')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    files_content = [files[file] for file in files]\n    file_names = [file.filename for file in files_content]\n    print(\"Conversation:\", qdrant_object.conversation)\n    print(\"Chat:\", qdrant_object.chat_history)",
+        "peekOfCode": "def handle_user_query():\n    global qdrant_object\n    gpt_query = request.form.get('query')\n    user_token = request.form.get('access_token')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    files_content = [files[file] for file in files]\n    if qdrant_object.collection == \"\":\n        qdrant_object.set_collection(collection)\n    if files:",
         "detail": "server.app",
         "documentation": {}
     },
@@ -450,16 +459,7 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_get_collections():\n    global qdrant_object\n    global supabase_client\n    user_token = request.form.get('access_token')\n    qdrant_object = QDrantClient()\n    supabase_client = create_client(supabase_url, supabase_key)\n    collections = qdrant_object.get_existing_collections()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response",
-        "detail": "server.app",
-        "documentation": {}
-    },
-    {
-        "label": "handle_get_chat_list",
-        "kind": 2,
-        "importPath": "server.app",
-        "description": "server.app",
-        "peekOfCode": "def handle_get_chat_list():\n    global qdrant_object\n    global supabase_client\n    user_token = request.form.get('access_token')\n    supabase_client = create_client(supabase_url, supabase_key)\n    all_chats = supabase_client.table('chats').select(\"*\").execute()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response\n@app.route('/api/user/save-chat', methods=['POST'])",
+        "peekOfCode": "def handle_get_collections():\n    global qdrant_object\n    user_token = request.form.get('access_token')\n    qdrant_object = QDrantClient()\n    supabase_client = create_client(supabase_url, supabase_key)\n    collections = qdrant_object.get_existing_collections()\n    response = jsonify({\"collections\": collections})\n    response.headers.add('Access-Control-Allow-Origin', '*')\n    return response\n@app.route('/api/user/save-chat', methods=['POST'])",
         "detail": "server.app",
         "documentation": {}
     },
@@ -468,7 +468,16 @@
         "kind": 2,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "def handle_save_chat():\n    global qdrant_object\n    global supabase_client\n    chat_title = request.form.get('chat_title')\n    user_id = request.form.get('user_id')  # how to do this?\n    file_id = request.form.get('file_id')  # generate file uuid\n    file = qdrant_object.get_conversation_memory()\n    pickled_file = pickle.dumps(file)\n    file_name = f\"{file_id}.pkl\"\n    access_token = request.form.get('access_token')",
+        "peekOfCode": "def handle_save_chat():\n    global qdrant_object\n    chat_title = request.form.get('chat_title')\n    user_id = request.form.get('user_id')  # how to do this?\n    file_id = request.form.get('file_id')  # generate file uuid\n    file = qdrant_object.get_conversation_memory()\n    pickled_file = pickle.dumps(file)\n    file_name = f\"{file_id}.pkl\"\n    access_token = request.form.get('access_token')\n    file_path = f\"chats/{user_id}/{file_name}\"",
+        "detail": "server.app",
+        "documentation": {}
+    },
+    {
+        "label": "handle_load_saved_chat",
+        "kind": 2,
+        "importPath": "server.app",
+        "description": "server.app",
+        "peekOfCode": "def handle_load_saved_chat():\n    global qdrant_object\n    file_path = request.form.get('file_path')\n    file_path = file_path.replace(\"chats/\", \"\")\n    access_token = request.form.get('access_token')\n    stream = io.BytesIO()\n    res = supabase_client.storage.from_(\"chats\").download(file_path)\n    stream.write(res)\n    stream.seek(0)\n    ## load pickle file from stream",
         "detail": "server.app",
         "documentation": {}
     },
@@ -477,7 +486,7 @@
         "kind": 5,
         "importPath": "server.app",
         "description": "server.app",
-        "peekOfCode": "app = Flask(__name__)\n#CORS(app)\nglobal qdrant_object\nglobal supabase_client\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')",
+        "peekOfCode": "app = Flask(__name__)\n#CORS(app)\nglobal qdrant_object\n@app.route('/api/guest/query', methods=['POST'])\ndef handle_guest_query():\n    gpt_query = request.form.get('query')\n    files = request.files.to_dict()\n    collection = request.form.get('collection')\n    new_chat = request.form.get('new_chat')\n    print(\"new chat: \" + new_chat)",
         "detail": "server.app",
         "documentation": {}
     },

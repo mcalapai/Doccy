@@ -4,7 +4,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import type { Database } from "@lib/database.types";
+import type { Database } from "@/types_db";
 
 export default function Login() {
   const [email, setEmail] = useState("");

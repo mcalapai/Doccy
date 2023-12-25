@@ -3,7 +3,7 @@
 import { Paperclip, Send } from "iconsax-react";
 import IconButton from "./IconButton";
 import QueryInput from "./QueryInput";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import CollectionDropdown from "./CollectionDropdown";
 import useCollections from "@/hooks/useCollections";
 import DocUpload from "./DocUpload";
@@ -13,6 +13,13 @@ import { useUser } from "@/hooks/useUser";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./components.css";
+import {
+  getChatHistory,
+  getCollectionData,
+  postUserQuery,
+  saveChat,
+} from "@/app/services/chatApi";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 const ChatBoxUser = () => {
   // chat session
@@ -25,21 +32,21 @@ const ChatBoxUser = () => {
   const {
     sessionID,
     setSessionID,
-    loadingResponse,
     setLoadingResponse,
-    chatHistory,
     setChatHistory,
+    setSavedChats,
   } = useChatSession();
+
+  const supabase = useSupabaseClient();
 
   // collections
   const [loading, setLoading] = useState(false);
-  const [isNewChat, setIsNewChat] = useState<boolean>(true);
+  //const [isNewChat, setIsNewChat] = useState<boolean>(true);
 
   // query
   const [inputText, setInputText] = useState("");
 
   // file upload
-  //const [isUploadedFiles, setIsUploadedFiles] = useState<boolean>(false);
   const [documents, setDocuments] = useState<File[]>([]);
   const [collectionNameInput, setCollectionNameInput] = useState("");
 
@@ -50,8 +57,9 @@ const ChatBoxUser = () => {
     if (documents.length > 0 && collectionNameInput === "") {
       setCollectionNameInput(documents[0].name.slice(0, -4));
     }
-  }, [documents]);
+  }, [documents, collectionNameInput]);
 
+  // post data
   const userPostData = async (
     inputText: string,
     accessToken: string,
@@ -59,76 +67,35 @@ const ChatBoxUser = () => {
     files?: File[]
   ) => {
     setLoadingResponse(true);
+    let chatTitle;
 
-    const formData = new FormData();
-    formData.append("query", inputText);
-    formData.append("access_token", accessToken);
-    if (files) {
-      files.forEach((file, index) => {
-        formData.append(`file_${index}`, file);
-      });
+    try {
       setCurrentCollection(collection);
-    }
-    formData.append("collection", collection);
-
-    const endpoint = "http://127.0.0.1:5000/api/user/query";
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-
-      if (data.status !== "success") {
-        throw new Error("Something went wrong");
-      } else {
-        const response = data.chat_history;
-        setChatHistory((currentChatHistory) => [
-          ...currentChatHistory,
-          response,
-        ]);
-      }
+      const chatHistory = await postUserQuery(
+        inputText,
+        accessToken,
+        collection,
+        files
+      );
+      setChatHistory((currentChatHistory) => [
+        ...currentChatHistory,
+        chatHistory.chat_history,
+      ]);
+      chatTitle = chatHistory.chat_title;
     } catch (error) {
-      console.log(error);
-      //setErrorMessage(true);
-    }
-    setLoadingResponse(false);
-  };
-
-  const saveChat = async (
-    accessToken: string,
-    userId: string,
-    sessionId: string
-  ) => {
-    //setLoadingResponse(true);
-
-    const formData = new FormData();
-    formData.append("chat_title", "UserChatTest");
-    formData.append("user_id", userId);
-    formData.append("file_id", sessionId);
-    formData.append("access_token", accessToken);
-
-    const endpoint = "http://127.0.0.1:5000/api/user/save-chat";
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-
-      if (data.status !== "success") {
-        throw new Error("Something went wrong");
-      } else {
-        const response = data;
-        console.log(response);
-      }
-    } catch (error) {
-      console.log(error);
+      console.log("Post query failed: ", error);
+    } finally {
+      setLoadingResponse(false);
+      return chatTitle;
     }
   };
 
+  // submit data
   const onSubmit = (input: string) => {
-    let newId = "";
+    let newID: string;
+    let currentSessionID;
+    let postDataPromise;
+    let saveChatPromise;
     if (documents.length === 0 && currentCollection === "") {
       toast(
         "Doccy has no context :( please specify a collection or make one!",
@@ -142,15 +109,13 @@ const ChatBoxUser = () => {
     }
     if (userDetails && accessToken) {
       if (sessionID === null) {
-        newId = uuid();
-        setSessionID(newId);
-        setIsNewChat(false);
-        //saveChat(userDetails?.id, newId);
+        newID = uuid();
+        setSessionID(newID);
       }
       setChatHistory((currentChatHistory) => [...currentChatHistory, input]);
       if (documents.length > 0) {
         // uploading new collection
-        userPostData(
+        postDataPromise = userPostData(
           input,
           accessToken,
           userDetails?.id + "___" + collectionNameInput,
@@ -158,49 +123,45 @@ const ChatBoxUser = () => {
         );
       } else {
         // selecting existing collection
-        userPostData(input, accessToken, currentCollection);
+        postDataPromise = userPostData(input, accessToken, currentCollection);
       }
+
+      postDataPromise?.then((chatTitle) => {
+        currentSessionID = sessionID || newID;
+        console.log("Saving chat...");
+        console.log("Chat title in post data: ", chatTitle);
+
+        saveChat(
+          accessToken,
+          chatTitle,
+          userDetails?.id,
+          currentSessionID
+        ).then(() => {
+          getChatHistory(supabase, userDetails?.id)
+            .then(setSavedChats)
+            .catch(console.log);
+          console.log("Updated history");
+        });
+      });
     }
 
     setDocuments([]);
   };
 
   useEffect(() => {
-    if (accessToken && userDetails && sessionID && loadingResponse === false) {
-      console.log("Session ID:", sessionID);
-      console.log("Saved chat");
-      saveChat(accessToken, userDetails?.id, sessionID);
-    }
-  }, [loadingResponse]);
-
-  const getCollectionData = async (userId: string) => {
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("chat_title", "UserChatTest");
-    formData.append("access_token", userId);
-
-    const endpoint = "http://127.0.0.1:5000/api/get-collections";
-    try {
-      const response = await fetch(endpoint, {
-        method: "GET",
-        body: formData,
-      });
-      const data = await response.json();
-
-      setCollections(data.collections);
-    } catch (error) {
-      console.log(error);
-    }
-    setLoading(false);
-  };
+    console.log("Session: ", sessionID);
+  }, [sessionID]);
 
   // fetch collection data
   useEffect(() => {
     if (userDetails) {
-      getCollectionData(userDetails?.id);
+      setLoading(true);
+      getCollectionData(userDetails?.id)
+        .then(setCollections)
+        .catch(console.log)
+        .finally(() => setLoading(false));
     }
-  }, []);
+  }, [setCollections, userDetails]);
 
   return (
     <div className="rounded-[20px] border border-main-outline bg-background-primary w-full px-[22px] py-[14px]">

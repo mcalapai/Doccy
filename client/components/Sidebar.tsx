@@ -5,33 +5,45 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
 import IconButton from "./IconButton";
 import { User } from "iconsax-react";
-import CollectionDropdown from "./CollectionDropdown";
 import { useEffect, useState } from "react";
-import useCollections from "@/hooks/useCollections";
 import Button from "./Button";
 import useChatSession from "@/hooks/useChatSession";
-import { Database } from "@/types_db";
+import { getChatHistory, loadSavedChat } from "@/app/services/chatApi";
+import { motion, AnimatePresence, easeInOut, easeIn } from "framer-motion";
 
 const Sidebar = () => {
   const router = useRouter();
   const { user, userDetails } = useUser();
-  const { sessionID, setSessionID, savedChats, setSavedChats } =
+  const { sessionID, savedChats, setSavedChats, chatHistory, setChatHistory } =
     useChatSession();
 
   const supabase = useSupabaseClient();
 
-  const getChatHistory = async () => {
-    let { data: chats, error } = await supabase
-      .from("chats")
-      .select("*")
-      .eq("user_id", userDetails?.id);
-    if (error) console.log("error", error);
-    else setSavedChats(chats || []);
-  };
+  // on saved chat click, we want to:
+  // 1. download chat pkl file from supabase
+  // 2. load into langchain conversation
+  // 3. set the current collection to the collection of the saved chat
+  // 4. convert conversation to chathistory array
+  // 5. send to client
 
   useEffect(() => {
-    getChatHistory();
+    if (userDetails?.id) {
+      getChatHistory(supabase, userDetails?.id)
+        .then(setSavedChats)
+        .catch(console.log);
+    }
+  }, [userDetails, supabase, setSavedChats]);
+
+  useEffect(() => {
+    console.log("Session id: ", sessionID);
   }, [sessionID]);
+
+  const handleLoadSavedChats = (userID: string, file_path: string) => {
+    loadSavedChat(userID, file_path).then((chats) => {
+      console.log("Chats: ", chats.chat_history);
+      setChatHistory(chats.chat_history);
+    });
+  };
 
   return (
     <div className="w-[250px] h-full flex flex-col gap-y-6 text-text-primary p-4 bg-background-primary border-r border-main-outline">
@@ -39,7 +51,7 @@ const Sidebar = () => {
         <p className="font-bold text-[10rem] font-lustig leading-extra-small">
           {user ? (
             <>
-              Hello,<br></br>name!
+              Hello<br></br>there.
             </>
           ) : (
             <>
@@ -60,15 +72,43 @@ const Sidebar = () => {
           }}
         />
       </div>
-      {user && (
+      {userDetails && (
         <div className="flex flex-col font-owners gap-y-[12px]">
           <p className="font-semibold text-xl">Chat History</p>
           <div className="space-y-[10px]">
             {savedChats?.map((chat, index) => {
               return (
-                <div className="flex flex-col bg-background-tertiary p-[10px] pl-[20px] rounded-full hover:opacity-80 transition-all cursor-pointer">
-                  {chat.title}
-                </div>
+                <motion.div
+                  className="flex flex-col bg-background-tertiary rounded-full hover:opacity-80 transition-all"
+                  initial={{ opacity: 0, y: 25 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={index}
+                  transition={{
+                    ease: easeInOut,
+                    duration: 0.25,
+                    delay: index / 10,
+                  }}
+                >
+                  {
+                    <button
+                      className="p-[10px] pl-[20px] w-full overflow-hidden whitespace-nowrap text-ellipsis"
+                      onClick={() => {
+                        handleLoadSavedChats(userDetails?.id, chat.file_path);
+                      }}
+                    >
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{
+                          duration: 0.25,
+                          delay: index / 10,
+                        }}
+                      >
+                        {chat.title}
+                      </motion.span>
+                    </button>
+                  }
+                </motion.div>
               );
             })}
           </div>

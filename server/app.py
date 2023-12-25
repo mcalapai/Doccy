@@ -15,13 +15,14 @@ import requests
 from utils import QDrantClient
 import utils
 from supabase import create_client, Client
+import io
+import pickle
 
 # app instance
 app = Flask(__name__)
 #CORS(app)
 
 global qdrant_object
-global supabase_client
 
 
 @app.route('/api/guest/query', methods=['POST'])
@@ -56,12 +57,7 @@ def handle_user_query():
     user_token = request.form.get('access_token')
     files = request.files.to_dict()
     collection = request.form.get('collection')
-
     files_content = [files[file] for file in files]
-    file_names = [file.filename for file in files_content]
-
-    print("Conversation:", qdrant_object.conversation)
-    print("Chat:", qdrant_object.chat_history)
 
     if qdrant_object.collection == "":
         qdrant_object.set_collection(collection)
@@ -71,24 +67,19 @@ def handle_user_query():
         # then run query on new collection
         qdrant_object.create_vector_store(files_content, collection)
         response = qdrant_object.handle_user_input(gpt_query)
-
-        response = jsonify({"status": "success", "chat_history": response})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
     else:
-        print("Query from existing collection ", collection)
-
         response = qdrant_object.handle_user_input(gpt_query)
 
-        response = jsonify({"status": "success", "chat_history": response})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+    chat_title = qdrant_object.generate_chat_title(gpt_query)
+
+    response = jsonify({"status": "success", "chat_history": response, "chat_title": chat_title})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 
 @app.route('/api/get-collections', methods=['GET'])
 def handle_get_collections():
     global qdrant_object
-    global supabase_client
 
     user_token = request.form.get('access_token')
 
@@ -102,25 +93,9 @@ def handle_get_collections():
 
     return response
 
-@app.route('/api/get-chat-list', methods=['GET'])
-def handle_get_chat_list():
-    global qdrant_object
-    global supabase_client
-
-    user_token = request.form.get('access_token')
-
-    supabase_client = create_client(supabase_url, supabase_key)
-    all_chats = supabase_client.table('chats').select("*").execute()
-    
-    response = jsonify({"collections": collections})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-
-    return response
-
 @app.route('/api/user/save-chat', methods=['POST'])
 def handle_save_chat():
     global qdrant_object
-    global supabase_client
 
     chat_title = request.form.get('chat_title')
     user_id = request.form.get('user_id')  # how to do this?
@@ -158,9 +133,44 @@ def handle_save_chat():
 
     return response
 
+@app.route('/api/user/load-saved-chat', methods=['POST'])
+def handle_load_saved_chat():
+    global qdrant_object
+
+    file_path = request.form.get('file_path')
+    file_path = file_path.replace("chats/", "")
+    access_token = request.form.get('access_token')
+
+    stream = io.BytesIO()
+
+    res = supabase_client.storage.from_("chats").download(file_path)
+    stream.write(res)
+    stream.seek(0)
+
+    ## load pickle file from stream
+    pickled_file = stream.getvalue()
+    file = pickle.loads(pickled_file)
+
+    ## create new qdrant object
+    qdrant_object = QDrantClient()
+
+    ## set collection?
+
+    ## set conversation memory
+    chat_history = qdrant_object.set_conversation_memory(file)
+
+    response = jsonify({"chat_history": chat_history})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    print(chat_history)
+
+    return response
+
 
 if __name__ == '__main__':
     supabase_url = os.environ.get('SUPABASE_URL')
     supabase_key = os.environ.get('SUPABASE_KEY')
+
+    supabase_client = create_client(supabase_url, supabase_key)
     
     app.run(debug=True)
