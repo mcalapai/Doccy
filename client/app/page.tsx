@@ -11,8 +11,13 @@ import SkeletonLine from "@/components/Skeleton";
 export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { loadingResponse, setLoadingResponse, chatHistory, setChatHistory } =
-    useChatSession();
+  const {
+    loadingResponse,
+    setLoadingResponse,
+    chatHistory,
+    setChatHistory,
+    loadingSavedChat,
+  } = useChatSession();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -24,47 +29,92 @@ export default function Home() {
 
   return (
     <main className="h-full w-full bg-background-secondary">
-      {chatHistory.length === 0 ? (
-        <div className="flex w-full h-full justify-center items-center text-center font-bold gap-x-6 -mt-[40px]">
-          <p className="text-background-tertiary select-none font-lustig text-[20rem] opacity-40 leading-none">
-            Doccy
-          </p>
-        </div>
+      {!loadingSavedChat ? (
+        <>
+          {chatHistory.length === 0 ? (
+            <div className="flex w-full h-full justify-center items-center text-center font-bold gap-x-6 -mt-[40px]">
+              <p className="text-background-tertiary select-none font-lustig text-[20rem] opacity-40 leading-none">
+                Doccy
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col lg:px-[200px] xl:px-[300px] py-5 gap-y-[48px]">
+              {chatHistory.map((item, index) => {
+                const from = index % 2 === 0 ? "You" : "Doccy";
+                return (
+                  <AnimatePresence key={index}>
+                    <motion.div
+                      className="flex flex-col"
+                      initial={{ opacity: 0, y: 25 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <p className="font-ownersNarrow font-bold text-[20px]">
+                        {from}
+                      </p>
+                      <p className="font-owner font-normal text-[20px] break-words whitespace-pre-wrap">
+                        {item}
+                      </p>
+                    </motion.div>
+                  </AnimatePresence>
+                );
+              })}
+              {loadingResponse && (
+                <AnimatePresence>
+                  <motion.div
+                    className="flex flex-col space-y-[10px]"
+                    initial={{ opacity: 0, y: 25 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <p className="font-ownersNarrow font-bold text-[20px]">
+                      Doccy
+                    </p>
+                    <SkeletonLine height={3} rows={5} />
+                  </motion.div>
+                </AnimatePresence>
+              )}
+            </div>
+          )}
+        </>
       ) : (
         <div className="flex flex-col lg:px-[200px] xl:px-[300px] py-5 gap-y-[48px]">
-          {chatHistory.map((item, index) => {
-            const from = index % 2 === 0 ? "You" : "Doccy";
-            return (
-              <AnimatePresence key={index}>
-                <motion.div
-                  className="flex flex-col"
-                  initial={{ opacity: 0, y: 25 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <p className="font-ownersNarrow font-bold text-[20px]">
-                    {from}
-                  </p>
-                  <p className="font-owner font-normal text-[20px] break-words whitespace-pre-wrap">
-                    {item}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-            );
-          })}
-          {loadingResponse && (
-            <AnimatePresence>
+          <AnimatePresence>
+            <div className="flex flex-col gap-y-[100px]">
               <motion.div
                 className="flex flex-col space-y-[10px]"
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
               >
-                <p className="font-ownersNarrow font-bold text-[20px]">Doccy</p>
+                <SkeletonLine height={3} rows={3} />
+              </motion.div>
+              <motion.div
+                className="flex flex-col space-y-[10px]"
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
                 <SkeletonLine height={3} rows={5} />
               </motion.div>
-            </AnimatePresence>
-          )}
+              <motion.div
+                className="flex flex-col space-y-[10px]"
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                <SkeletonLine height={3} rows={2} />
+              </motion.div>
+              <motion.div
+                className="flex flex-col space-y-[10px]"
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                <SkeletonLine height={3} rows={4} />
+              </motion.div>
+            </div>
+          </AnimatePresence>
         </div>
       )}
       <div ref={messagesEndRef} />

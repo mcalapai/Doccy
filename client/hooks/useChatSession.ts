@@ -12,8 +12,8 @@ interface ChatSessionStore {
   setLoadingResponse: (newLoadingResponse: boolean) => void;
   savedChats: Database['public']['Tables']['chats']['Row'][] | null;
   setSavedChats: (newSavedChats: Database['public']['Tables']['chats']['Row'][] | null) => void;
-  refreshSavedChats: boolean;
-  setRefreshSavedChats: (newRefreshSavedChats: boolean) => void;
+  loadingSavedChat: boolean;
+  setLoadingSavedChat: (newLoadingSavedChat: boolean) => void;
 }
 
 const useChatSession = create<ChatSessionStore>((set) => ({
@@ -33,8 +33,8 @@ const useChatSession = create<ChatSessionStore>((set) => ({
   setLoadingResponse: (isLoading) => set({loadingResponse: isLoading}),
   savedChats: null,
   setSavedChats: (newSavedChats) => set({savedChats: newSavedChats}),
-  refreshSavedChats: false,
-  setRefreshSavedChats: (newRefreshSavedChats) => set({refreshSavedChats: newRefreshSavedChats}),
+  loadingSavedChat: false,
+  setLoadingSavedChat: (isLoading) => set({loadingSavedChat: isLoading}),
 }))
 
 export default useChatSession;

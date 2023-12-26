@@ -5,6 +5,7 @@ type SkeletonLineProps = {
   baseColor?: string;
   highlightColor?: string;
   height?: string | number;
+  width?: string | number;
   rows?: number;
 };
 
@@ -12,6 +13,7 @@ const SkeletonLine: React.FC<SkeletonLineProps> = ({
   baseColor = "<bg-gray-7></bg-gray-7>00",
   highlightColor = "#FFFFFF", // default highlight color in HEX
   height,
+  width = "100%",
   rows = 1,
 }) => {
   const highlightStyle = {
@@ -23,8 +25,10 @@ const SkeletonLine: React.FC<SkeletonLineProps> = ({
 
   const skeletonHeight =
     typeof height === "number" ? `h-${height}` : `h-[${height}]`;
+  const skeletonWidth =
+    typeof width === "number" ? `w-${width}` : `w-[${width}]`;
 
-  console.log(skeletonHeight);
+  console.log(skeletonWidth);
 
   return (
     <>
@@ -32,7 +36,7 @@ const SkeletonLine: React.FC<SkeletonLineProps> = ({
         return (
           <div
             key={index}
-            className={`${baseColor} ${skeletonHeight} opacity-20 relative overflow-hidden rounded-full`}
+            className={`${baseColor} ${skeletonHeight} ${skeletonWidth} opacity-20 relative overflow-hidden rounded-full`}
           >
             <div className="skeleton-highlight" style={highlightStyle} />
           </div>

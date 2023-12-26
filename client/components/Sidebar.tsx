@@ -23,6 +23,8 @@ const Sidebar = () => {
     setSavedChats,
     chatHistory,
     setChatHistory,
+    loadingSavedChat,
+    setLoadingSavedChat,
   } = useChatSession();
 
   const supabase = useSupabaseClient();
@@ -51,6 +53,7 @@ const Sidebar = () => {
     file_path: string,
     collection_name: string
   ) => {
+    setLoadingSavedChat(true);
     loadSavedChat(userID, file_path, collection_name)
       .then((chats) => {
         setChatHistory(chats.chat_history);
@@ -59,6 +62,7 @@ const Sidebar = () => {
       })
       .finally(() => {
         console.log("Current collection: ", currentCollection);
+        setLoadingSavedChat(false);
       });
   };
 
